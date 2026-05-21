@@ -1,0 +1,1553 @@
+:root {
+    --bg: #0b0b0b;
+    --card: #161616;
+    --accent: #ff4d4d;
+    --text: #eee;
+}
+
+.gauge-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); 
+    grid-template-rows: repeat(3, auto); 
+    gap: 20px; 
+    padding: 20px;   
+}
+/* LED Toggle Button */
+.toggle-btn {
+    background: #444;
+    color: white;
+    border: 1px solid #666;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.toggle-btn.active {
+    background: #00ff00;
+    color: #000;
+    box-shadow: 0 0 10px #00ff00;
+}
+
+.gps-coords {
+    font-family: monospace;
+    font-size: 11px;
+    color: #888;
+}
+
+.gauge-card {
+    min-height: 320px; /* Adjust to match the CO card exactly */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    box-sizing: border-box;
+    background: #1a1a1a;
+    border-radius: 12px;
+}
+.card-header {
+    width: 100%;
+    display: flex;
+    justify-content: center; /* Keeps 'HEADING & WIND' in the middle */
+    align-items: center;
+    position: relative;
+    padding-bottom: 10px;
+}
+.trend-link {
+    position: absolute;
+    right: 0;
+    top: 0;
+    font-size: 0.75rem;
+    color: #888;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 6px;
+    border-radius: 3px;
+    transition: 0.3s;
+}
+
+.trend-link i {
+    font-size: 0.7rem;
+}
+
+.trend-link:hover {
+    color: #00ffcc;
+    background: rgba(0, 255, 204, 0.1);
+}
+.card-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #fff;
+    text-align: center;
+}
+.trend-placeholder {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.gauge-body {
+    /* This container holds the canvas and ensures it scales with zoom */
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+.compass-container {
+    width: 180px;  /* Typical size for standard gauges */
+    height: 180px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.digital-display {
+    background: #000;
+    color: #00ff00;
+    font-family: 'Orbitron', monospace;
+    padding: 2px 10px;
+    border: 1px solid #333;
+    margin-top: 10px;
+    font-size: 1.1rem;
+}
+.dashboard-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 equal columns */
+    grid-template-rows: repeat(2, auto);    /* 2 rows */
+    gap: 5px;                             /* Space between cards */
+    padding: 5px;
+    max-width: 1000px;                     /* Centers the dashboard on wide screens */
+    margin: 0 auto;
+}
+
+.download-btn {
+    background-color: #28a745 !important; /* Green */
+    color: white;
+    border: none;
+    margin-right: 10px;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.download-btn:hover {
+    background-color: #218838 !important;
+}
+
+.download-btn-class { /* Use your actual button class or ID */
+    position: relative !important;
+    z-index: 99999 !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+.label { color: #666; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 10px; }
+
+/* THE MAP: Must have a height! */
+/* Inside static/style.css */
+.modal-content {
+    background: #111;
+    width: 80%;
+    max-width: 1500px;
+    margin: 50px auto;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #333;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 350px; /* Adjust this value to fit your screen */
+    margin-top: 20px;
+    background: #111; /* Slightly lighter than the modal for contrast */
+    border-radius: 8px;
+    padding: 10px;
+}
+
+#trendChart {
+    display: block !important;
+    width: 100% !important;
+    height: 400px !important; /* 👈 MUST have a fixed height in pixels */
+    min-height: 400px;
+}
+.modal-body {
+    padding: 20px;
+    min-height: 450px;
+}
+.gauge-container {
+    width: 100%;
+    max-width: 320px; /* Adjust this to make the whole thing smaller/larger */
+    margin: 0 !important;
+    aspect-ratio: 1 / 1;
+}
+
+.temp-text {
+    position: absolute;
+    top: 65%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 24px;
+    font-weight: bold;
+    color: #fff;
+}
+/* This forces the cards to sit side-by-side again */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+#tempGauge {
+    width: 80%;  /* Fills the container */
+    height: 80%; /* Fills the container */
+    display: block;
+}
+#humGauge {
+    width: 80%;  /* Fills the container */
+    height: 80%; /* Fills the container */
+    display: block;
+}
+#uvGauge {
+    width: 80%;  /* Fills the container */
+    height: 80%; /* Fills the container */
+    display: block;
+}
+#pm25Gauge {
+    width: 80%;  /* Fills the container */
+    height: 80%; /* Fills the container */
+    display: block;
+}
+#presGauge {
+    width: 80%;  /* Fills the container */
+    height: 80%; /* Fills the container */
+    display: block;
+}
+#luxGauge {
+    width: 80%;  /* Fills the container */
+    height: 80%; /* Fills the container */
+    display: block;
+}
+
+/* Style for the titles */
+.card h3 {
+    margin: 0 0 5px 0 !important;
+    font-size: 0.9rem;
+    color: #888;
+}
+/* BIGGER FONTS */
+#v-temp, #v-hum, #v-lux, #v-pres, #v-uv, #v-pm25 {
+    font-size: 22px;         /* Much larger digital numbers */
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+}
+.card:first-child {
+    grid-row: span 1; 
+    /* You could also use grid-column: span 2; if you want it very wide */
+}
+.trend-btn {
+    position: absolute;
+    top: -5px;
+    right: 10px;
+    z-index: 10;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    padding: 2px;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    background: #0a0a0a;
+    color: white;
+    font-family: sans-serif;
+    /* Enable vertical sliding/scrolling */
+    overflow-y: auto; 
+    overflow-x: hidden;
+    height: 100%;
+}
+
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Takes full screen, but can grow longer */
+    padding: 10px;
+}
+header h1 { font-size: 1.2rem; color: #444; border-left: 4px solid #e74c3c; padding-left: 10px; margin-bottom: 10px; }
+
+.main-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    /* minmax(280px, 1fr) ensures gauges stay at least 280px tall 
+       before the page starts scrolling */
+    grid-template-rows: repeat(2, minmax(280px, 1fr)) auto;
+    gap: 15px;
+    flex-grow: 1;
+}
+.sensor-card {
+    background: #151515;
+    border: 1px solid #222;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    
+    /* CRITICAL: This stops gauges from overlapping other cards */
+    overflow: hidden; 
+    position: relative;
+    
+    /* Give cards a minimum width so they don't get too skinny */
+    min-width: 200px; 
+}
+.canvas-box {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* This creates a small safety 'buffer' inside the card */
+    padding: 5px; 
+}
+
+canvas {
+    /* Ensure the canvas never physically exceeds its box */
+    max-width: 100%;
+    max-height: 100%;
+    /* display: block; */
+}
+.map-card { 
+    grid-column: span 2; 
+    height: 300px; /* Fixed height for map to ensure sliding works */
+    position: relative;
+}
+
+.card { background: #151515;
+    border-radius: 8px;
+    border: 1px solid #222; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    padding: 5px; 
+    position: relative; }
+
+.map-box {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.unit {
+    font-size: 0.7rem;
+    color: #444; /* Darker color so the number stands out */
+    margin-left: 5px;
+}
+.speed-row .lcd-small {
+    background: #050505;
+    border: 1px solid #222;
+    padding: 4px 10px;
+    display: inline-block;
+    border-radius: 4px;
+    color: #00ff00; /* Green LCD color */
+    font-family: 'Orbitron', monospace;
+}
+.wind-info {
+    text-align: center;
+    margin-top: 10px;
+}
+#dir-name {
+    color: #00ffff; /* Cyan highlight for the direction name */
+    margin-left: 5px;
+}
+.wind-data-readout {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.direction-row {
+    font-family: 'Orbitron', sans-serif;
+    color: #eee;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.direction-text {
+    color: #eee;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+}
+.lcd { background: black; 
+    color: #00ff00; 
+    font-family: monospace; 
+    font-size: 1.2rem; 
+    padding: 4px 10px; 
+    border-radius: 4px; 
+    border: 1px solid #333; 
+    margin: 5px 0; }
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: #0a0a0a;
+}
+
+.time-selector {
+    display: flex;
+    gap: 5px;
+    background: #1a1a1a;
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid #333;
+}
+
+
+
+.time-btn:hover {
+    color: #00ffff;
+}
+
+/* The active button glows Cyan */
+
+.close-btn {
+    background: #ff4d4d;
+    /* your existing close button style */
+}
+
+.close-trend-btn {
+    margin-left: 15px; /* Space it out slightly from the 24H button */
+    border-color: #444;
+    color: #888;
+}
+
+.close-trend-btn:hover {
+    background: #ff4d4d !important; /* Red hover */
+    color: white !important;
+    border-color: #ff4d4d !important;
+    box-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
+}
+#led-status {
+    font-weight: bold;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+/* Optional: Add a class you can toggle instead of inline styles */
+.status-on {
+    color: #2ecc71 !important;
+    text-shadow: 0 0 8px rgba(46, 204, 113, 0.6);
+}
+
+.status-off {
+    color: #95a5a6 !important;
+    text-shadow: none;
+}
+#wind-vane {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 4px;
+    height: 70px;
+    background: #00ffff;
+    transform-origin: bottom center;
+    transform: translate(-50%, -100%) rotate(0deg);
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); /* Natural swing */
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+}
+
+/* Add a tail to the needle to make it look like a vane */
+.vane-tail {
+    position: absolute;
+    bottom: 0;
+    left: -6px;
+    width: 16px;
+    height: 10px;
+    background: #00ffff;
+    clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+    transform: translateY(10px);
+}
+
+.wind-stats {
+    text-align: center;
+    margin-top: 10px;
+    font-family: 'Courier New', monospace;
+    color: #00ffff;
+}
+
+/* The container holding both the Compass and the Map */
+.display-panel {
+    display: flex;       /* This enables the side-by-side layout */
+    flex-direction: row; /* Horizontal alignment */
+    gap: 10px;           /* Space between Compass and Map */
+    width: 100%;
+    height: 400px;       /* Set a fixed height for the whole row */
+}
+
+/* Make both panels share the space 50/50 */
+.compass-section, .map-section {
+    flex: 1;             /* Each takes half the available width */
+    background: #111;    /* Dark background to match your theme */
+    border: 1px solid #333;
+    position: relative;  /* Necessary for the GPS overlay positioning */
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Ensure the Leaflet map fills its half completely */
+.gps-card .card-content {
+    padding: 0 !important; /* Forces map to the edges */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+#map-container {
+    flex-grow: 1; /* Makes the map take up all available vertical space */
+    width: 100%;
+    min-height: 300px; /* Adjust this to fit your screen */
+}
+
+.compass-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+.dashboard-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: stretch; /* Keeps all columns the same height */
+    gap: 15px;
+    margin: 20px;
+    height: 450px; /* Fixed height for the entire row */
+}
+
+.column {
+    flex: 1; /* Distributes width equally (33.3% each) */
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Heading Styling */
+.column h3 {
+    font-size: 0.9rem;
+    color: #888;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+}
+
+/* LED Panel Centering */
+.control-content {
+    margin: auto; /* Centers the button vertically in its column */
+}
+.bottom-layout {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px; /* Matches the spacing of your top row */
+    width: 100%;
+    margin-top: 20px;
+    height: 480px; /* Set this to match the height of your top cards */
+}
+.card-column {
+    flex: 1; /* This is the magic line for equal width (33.33% each) */
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 15px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+.card-title {
+    text-align: center;
+    color: #888;
+    font-size: 0.85rem;
+    letter-spacing: 1.5px;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+}
+.card-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.card-body.centered {
+    justify-content: center;
+    align-items: center;
+}
+
+/* Map specific styling to fill the column */
+#map-container {
+    width: 100%;
+    height: 100%; /* Map fills the remaining space in card */
+    min-height: 250px;
+    border-radius: 10px;
+}
+.compass-dial {
+    position: relative;
+    width: 180px;  /* Fixed width */
+    height: 180px; /* Fixed height same as width */
+    border-radius: 50%;
+    border: 2px solid #333;
+    background: #0a0a0a;
+    margin-bottom: 15px;
+}
+
+/* Cardinal Labels */
+.label {
+    position: absolute;
+    font-weight: bold;
+    font-family: 'Arial', sans-serif;
+    color: #555;
+}
+.n { top: 10px; left: 50%; transform: translateX(-50%); color: #ff4d4d; } /* North is Red */
+.e { right: 10px; top: 50%; transform: translateY(-50%); }
+.s { bottom: 10px; left: 50%; transform: translateX(-50%); }
+.w { left: 10px; top: 50%; transform: translateY(-50%); }
+
+
+
+/* The Outer Metallic Rim */
+.compass-outer-ring {
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    background: conic-gradient(#aaa, #eee, #999, #fff, #aaa);
+    padding: 12px;
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.4), 0 10px 20px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* The White Compass Face */
+.compass-face {
+    position: relative;
+    width: 200px; /* Match your compass size */
+    height: 200px;
+    border-radius: 50%;
+    background: #fdfdfd; /* Or your preferred face color */
+}
+.ticks {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    /* This creates 72 clean marks around the edge only */
+    background: repeating-conic-gradient(from 0deg, #333 0deg 0.5deg, transparent 0.5deg 5deg);
+    -webkit-mask-image: radial-gradient(circle, transparent 92%, black 93%);
+    mask-image: radial-gradient(circle, transparent 92%, black 93%);
+}
+/* 2. INNER CIRCLES */
+.inner-circle-large {
+    position: absolute;
+    top: 15%; left: 15%; width: 70%; height: 70%;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+}
+.inner-circle-small {
+    position: absolute;
+    top: 35%; left: 35%; width: 30%; height: 30%;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+}
+.compass-rose {
+    position: absolute;
+    top: 50%; 
+    left: 50%;
+    /* 1. SHORTER: Reduced from 60% to 45% */
+    width: 45%; 
+    height: 45%;
+    transform: translate(-50%, -50%);
+    background: 
+        /* 2. SMALLER (Thinner): Adjusted from 48%/52% to 49.5%/50.5% for 1% thickness */
+        /* Main Cross (N-S, E-W) */
+        linear-gradient(0deg, transparent 49.5%, #333 49.5%, #333 50.5%, transparent 50.5%),
+        linear-gradient(90deg, transparent 49.5%, #333 49.5%, #333 50.5%, transparent 50.5%),
+        
+        /* Diagonal Cross (NW-SE, NE-SW) - Even thinner and lighter color */
+        linear-gradient(45deg, transparent 49.7%, #777 49.7%, #777 50.3%, transparent 50.3%),
+        linear-gradient(-45deg, transparent 49.7%, #777 49.7%, #777 50.3%, transparent 50.3%);
+    z-index: 1; /* Keeps them behind the needle */
+    opacity: 0.8; /* Makes them look slightly "etched" into the face */
+}
+
+/* Direction Labels (N, S, E, W) */
+.mark {
+    position: absolute;
+    width: 30px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    transform-origin: center;
+    text-align: center;
+    font-weight: bold;
+    font-family: 'Arial', sans-serif;
+    color: #333;
+    font-size: 14px;
+}
+.mark-sub { font-size: 0.8rem; color: #555; }
+
+.mark.n  { transform: translate(-50%, -90px); color: #c0392b; font-size: 18px; }
+.mark.e  { transform: translate(65px, -50%); }
+.mark.s  { transform: translate(-50%, 70px); }
+.mark.w  { transform: translate(-95px, -50%); }
+
+/* Intercardinal Directions (Smaller and Gray) */
+.mark.ne { transform: translate(45px, -75px); font-size: 10px; color: #777; }
+.mark.se { transform: translate(45px, 55px);  font-size: 10px; color: #777; }
+.mark.sw { transform: translate(-75px, 55px); font-size: 10px; color: #777; }
+.mark.nw { transform: translate(-75px, -75px); font-size: 10px; color: #777; }
+
+/* The Needle Container */
+.needle {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 14px; height: 160px;
+    transform: translate(-50%, -50%) rotate(0deg);
+    z-index: 10;
+}
+.needle-north {
+    width: 100%; height: 50%;
+    background: linear-gradient(90deg, #ff4d4d 50%, #cc0000 50%);
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+.needle-south {
+    width: 100%; height: 50%;
+    background: linear-gradient(90deg, #3399ff 50%, #0056b3 50%);
+    clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+}
+
+/* Center Silver Screw */
+.center-pin {
+    width: 16px; height: 16px;
+    background: radial-gradient(circle at 30% 30%, #fff, #999 60%, #444);
+    border: 1px solid #777;
+    border-radius: 50%;
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+}
+
+/* Center Pivot */
+.pivot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 12px;
+    height: 12px;
+    background: #222;
+    border: 2px solid #00ffff;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+}
+
+.bottom-grid-row {
+    display: flex;          /* Enables side-by-side */
+    width: 100%;            /* Fills the whole dashboard width */
+    gap: 20px;              /* Space between the three boxes */
+    margin-top: 25px;
+    height: 480px;          /* Match the height of your top cards */
+}
+
+/* 2. The three columns (Cards) */
+.dashboard-card {
+    flex: 1;                /* MAGIC: Forces all 3 to be exactly equal width */
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    box-sizing: border-box; /* Prevents padding from breaking width */
+}
+
+/* 3. The Content Area */
+.card-content {
+    flex-grow: 1;           /* Makes content fill the height of the card */
+    display: flex;
+    flex-direction: column;
+}
+
+.card-content.centered {
+    justify-content: center;
+    align-items: center;
+}
+
+.wind-readout-container {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.direction-text {
+    font-size: 1.1rem;
+    color: #fff;
+    margin-bottom: 5px;
+}
+
+/* The LCD Screen Style */
+.speed-lcd {
+    background: #000;
+    border: 1px solid #333;
+    padding: 5px 15px;
+    border-radius: 5px;
+    display: inline-block;
+    box-shadow: inset 0 0 5px rgba(0, 255, 255, 0.2);
+}
+
+#ws-val {
+    font-family: 'Courier New', monospace; /* Digital look */
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #00ffff; /* Neon Cyan */
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.speed-lcd small {
+    color: #555;
+    font-size: 0.7rem;
+    margin-left: 5px;
+    text-transform: uppercase;
+}
+/* Ensure the card allows the map to expand */
+.gps-card {
+    display: flex;
+    flex-direction: column;
+    padding: 0 !important; /* Forces the map to the edges */
+    height: 350px; /* Adjust to match your other card heights */
+}
+
+.gps-card .card-title {
+    padding: 10px; /* Put padding back only on the title */
+    margin: 0;
+}
+
+/* Make the map fill the available space */
+#map {
+    width: 100%;
+    flex-grow: 1;    /* Fills the rest of the card */
+    min-height: 250px; 
+    background: #222;
+}
+
+/* Style the text at the bottom */
+.gps-info {
+    width: 100%;
+    background: #111;
+    color: #00d4ff;
+    text-align: center;
+    padding: 10px 0;
+    font-family: monospace;
+    font-weight: bold;
+    border-top: 1px solid #333;
+}
+#map-container {
+    width: 100% !important; /* Occupy 100% of the card width */
+    height: 300px;         /* Adjust this height as needed */
+    flex-grow: 1;
+    border-radius: 0 0 10px 10px;
+}
+
+button { background: #333; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-size: 0.7rem; }
+
+.date-input {
+    background: #111;
+    border: 1px solid #333;
+    color: #00ffff; /* Cyan text */
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.date-input:hover {
+    border-color: #00ffff;
+    box-shadow: 0 0 8px rgba(0, 255, 255, 0.2);
+}
+
+/* 🟢 Customizing the calendar icon (Inverts it to white/cyan) */
+::-webkit-calendar-picker-indicator {
+    filter: invert(1) sepia(100%) saturate(10000%) hue-rotate(180deg);
+}
+.date-container {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+#date-selector {
+    background: #222;
+    color: #00d4ff;
+    border: 1px solid #444;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+#date-selector::-webkit-calendar-picker-indicator {
+    filter: invert(1); /* Makes the calendar icon white */
+    cursor: pointer;
+}
+/* Container holds everything */
+.history-container {
+    background: #111;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px auto;
+    width: 95%; /* Use almost full width of the screen */
+}
+
+/* Top Title and Date */
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Horizontal Row for all buttons */
+.history-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #333;
+}
+.history-controls .group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.history-controls span {
+    color: #888;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+/* THE PLOT: Now takes full width */
+.history-chart-main {
+    width: 100%;
+    height: 600px; /* Increased height for better detail */
+    position: relative;
+}
+
+
+.chart-box {
+    position: relative;
+    height: 300px; /* This is required for Chart.js to work */
+    width: 100%;
+    margin-bottom: 30px;
+    background: #111;
+    padding: 10px;
+    border-radius: 5px;
+}
+.param-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+/* Button Styling */
+.param-btn, .time-btn {
+    background: #222;
+    color: #eee;
+    border: 1px solid #444;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.history-chart-wrapper {
+    width: 100%;
+    height: 450px; /* Adjust this to make it as big as you want */
+    margin-top: 15px;
+    position: relative;
+}
+.time-btn.active {
+    background: cyan;
+    color: black;
+    box-shadow: 0 0 10px cyan;
+    border-color: cyan;
+}
+
+.param-btn.active {
+    border-bottom: 3px solid; /* Color set via JS or specific classes */
+}
+
+/* Modal Style */
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; }
+
+.modal-content {
+    overflow: visible !important;
+}
+.close-btn { margin-top: 10px; background: var(--accent); border: none; color: white; padding: 10px 20px; cursor: pointer; border-radius: 4px; }
+
+@media (max-width: 1100px) {
+    .main-grid {
+        /* Drop to 2 columns when zooming in or on smaller screens */
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, minmax(280px, 1fr)) auto;
+    }
+    .map-card {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 700px) {
+    .main-grid {
+        /* Drop to 1 column for mobile or extreme zoom */
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(6, minmax(280px, 1fr)) auto;
+    }
+    .map-card {
+        grid-column: span 1;
+    }
+}
+
+/* Yellow Statistic Button */
+.btn-stats {
+    background: #ffcc00;
+    color: #000;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: 0.2s;
+}
+
+.btn-stats:hover {
+    background: #ffd633;
+    box-shadow: 0 0 8px rgba(255, 204, 0, 0.4);
+}
+
+/* Floating Stats Card */
+.stats-card {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 190px;
+    background: rgba(10, 10, 10, 0.92);
+    border: 1px solid #ffcc00;
+    border-radius: 6px;
+    z-index: 100;
+    backdrop-filter: blur(4px);
+    transition: width 0.2s ease-in-out; /* Smooth shrinking */
+}
+
+.stats-header {
+    display: flex;
+    justify-content: space-between; /* Pushes title to left, buttons to right */
+    align-items: center;           /* Centers everything vertically */
+    background: #ffcc00;
+    color: #000;
+    padding: 6px 12px;
+    border-radius: 8px 8px 0 0;
+    cursor: move;                  /* Shows the hand icon */
+    user-select: none;             /* Prevents text selection while dragging */
+}
+
+.stats-header button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.stats-body {
+    padding: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 10px;
+}
+
+.header-btns {
+    display: flex;
+    align-items: center;
+    gap: 15px;                     /* 🎯 Horizontal space between - and x */
+}
+.header-btns button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #000;
+    line-height: 1;                /* Keeps the '-' symbol from dropping down */
+    padding: 0;
+    margin: 0;
+}
+.stats-card.collapsed {
+    width: 140px; /* Shorter when minimized */
+}
+
+.stats-card.collapsed .stats-body {
+    display: none; /* Hides the math data */
+}
+
+
+.stat-box {
+    display: flex;
+    flex-direction: column;
+}
+.stat-label {
+    font-size: 0.65rem;
+    color: #888;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+.stat-value {
+    font-size: 0.95rem;
+    color: #fff;
+    font-weight: 500;
+}
+
+/* 🎯 Force the Modal to be visible and at the very front */
+#historyModal.fullscreen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    
+    /* 🛡️ Visibility Insurance */
+    display: flex !important; 
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 9999999 !important; 
+    
+    background: #0b0b0b !important; 
+    flex-direction: column !important;
+}
+
+/* 🎯 Break the 800px "Wall" on internal layers */
+#historyModal.fullscreen .modal-dialog,
+#historyModal.fullscreen .modal-content {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    display: flex !important;
+    flex-direction: column !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* 🎯 Stretch the Chart area */
+#historyModal.fullscreen .modal-body,
+#historyModal.fullscreen #historyChartContainer {
+    flex: 1 !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+    visibility: visible !important;
+    padding: 20px !important;
+    min-height: 0; /* Essential for flex-stretching */
+}
+
+#historyModal.fullscreen canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+}
+
+/* Card & Table Layout */
+.votes-card {
+    background: #111116;
+    border: 1px solid #222;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+.votes-card h3 {
+    margin: 0 0 12px 0;
+    font-size: 15px;
+    color: #fff;
+    font-weight: 600;
+}
+
+.table-container {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.votes-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.votes-table th, .votes-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #222;
+    font-size: 13px;
+}
+
+.votes-table th {
+    background-color: #1a1a24;
+    color: #888;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 11px;
+}
+
+/* Scrollbar customization for the table container */
+.table-container::-webkit-scrollbar {
+    width: 6px;
+}
+.table-container::-webkit-scrollbar-thumb {
+    background-color: #333;
+    border-radius: 4px;
+}
+
+/* Professional Status Badges */
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.badge-cold {
+    background: rgba(41, 128, 185, 0.15);
+    color: #3498db;
+    border: 1px solid rgba(41, 128, 185, 0.3);
+}
+
+.badge-comfy {
+    background: rgba(39, 174, 96, 0.15);
+    color: #2ecc71;
+    border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.badge-hot {
+    background: rgba(192, 57, 43, 0.15);
+    color: #e74c3c;
+    border: 1px solid rgba(192, 57, 43, 0.3);
+}
+
+.inline-poll {
+    padding: 8px 0;
+    text-align: center;
+}
+
+.inline-poll p {
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 12px;
+}
+
+.poll-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.vote-btn {
+    flex: 1;
+    max-width: 90px;
+    border: none;
+    padding: 8px 0;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.2s;
+    color: #fff;
+    font-size: 12px;
+}
+
+.vote-btn:hover {
+    transform: scale(1.05);
+}
+
+.cold-btn { background: #2980b9; }
+.comfy-btn { background: #27ae60; }
+.hot-btn { background: #c0392b; }
+
+.poll-status {
+    margin-top: 8px;
+    font-size: 11px;
+    color: #00ffcc;
+    min-height: 15px;
+}
+
+.card-divider {
+    border: 0;
+    border-top: 1px solid #222;
+    margin: 15px 0;
+}
+
+
+
+
+.header-poll-btn:active {
+    transform: translateY(1px);
+}
+
+/* Modal Background Overlay */
+.qr-modal-overlay {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(6, 6, 8, 0.95); /* Blur/Darken effect */
+    backdrop-filter: blur(8px);
+    z-index: 9999; /* Ensure it stays on top of everything */
+    justify-content: center;
+    align-items: center;
+}
+
+/* Modal Content Box */
+.qr-modal-content {
+    background: #111116;
+    border: 1px solid #222;
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    width: 90%;
+    max-width: 450px;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    animation: zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+}
+
+@keyframes zoomIn {
+    from { transform: scale(0.85); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* Close Button (X) */
+.close-modal-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 30px;
+    font-weight: bold;
+    color: #555;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close-modal-btn:hover {
+    color: #e74c3c;
+}
+
+/* Content Text */
+.qr-modal-content h2 {
+    font-size: 24px;
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+.qr-subtext {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 25px;
+}
+
+/* QR Code Container */
+.qr-code-wrapper {
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 12px;
+    display: inline-block;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    margin-bottom: 25px;
+}
+
+.qr-code-wrapper img {
+    display: block;
+    width: 240px;
+    height: 240px;
+}
+
+.qr-url-text {
+    font-size: 13px;
+    color: #666;
+}
+
+.qr-url-text span {
+    color: #00ffcc;
+    font-weight: bold;
+    font-family: monospace;
+}
+
+.main-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+    width: 100%;
+}
+
+.header-top-row {
+    position: relative; /* Allows admin-controls to pin to the right */
+    width: 100%;
+    display: flex;
+    justify-content: center; /* Centers the H1 */
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+#station-title {
+    margin: 0;
+    font-size: 2.2rem;
+    color: #f0f0f0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.admin-controls {
+    position: absolute;
+    right: 30px; /* Pins it to the right edge */
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.owner-btn {
+    background: transparent;
+    border: 1px solid #00ffcc;
+    color: #00ffcc;
+    padding: 6px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: 0.3s;
+}
+
+.owner-btn:hover {
+    background: rgba(0, 255, 204, 0.1);
+}
+
+/* Classroom Poll Button - Large Pill Style */
+.header-poll-btn {
+    background: #1a73e8; /* Research Blue */
+    color: white;
+    border: none;
+    padding: 12px 50px;
+    border-radius: 50px; /* Makes it a pill shape */
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    transition: 0.2s;
+}
+
+.header-poll-btn:hover {
+    background: #1557b0;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+}
+/* Style for the labels when the checkbox inside is disabled */
+#exportParams label {
+    transition: opacity 0.3s ease;
+}
+
+#exportParams input[disabled] + span, 
+#exportParams input[disabled] {
+    cursor: not-allowed;
+}
+
+/* Optional: Add a lock icon tooltip or style to the download button when locked */
+.time-btn:disabled {
+    background: #333 !important;
+    border-color: #555 !important;
+    color: #777 !important;
+    box-shadow: none !important;
+}
+
+.custom-modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 9999;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.85); /* Dim the background */
+    backdrop-filter: blur(5px);
+}
+
+.modal-content h3 { color: #00ffcc; margin-top: 0; }
+
+.modal-content input[type="password"] {
+    width: 90%;
+    padding: 12px;
+    margin: 20px 0;
+    background: #222;
+    border: 1px solid #444;
+    color: white;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.modal-buttons { display: flex; justify-content: space-around; }
+
+.btn-ok { background: #00ffcc; color: #111; border: none; padding: 8px 25px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+.btn-cancel { background: transparent; color: #888; border: 1px solid #444; padding: 8px 20px; border-radius: 5px; cursor: pointer; }
+
+/* Match the green digital readout style */
+.digital-display-box {
+    background: #000;
+    color: #00ff00;
+    font-family: 'Orbitron', monospace;
+    border: 1px solid #111;
+    padding: 2px 12px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    box-shadow: inset 0 0 5px rgba(0,255,0,0.2);
+}
+
+.sub-text-value {
+    color: #aaa;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+.wind-speed-text {
+    color: #888;
+    font-size: 0.9rem;
+}
+
