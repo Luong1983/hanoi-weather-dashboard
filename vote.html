@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classroom Comfort Poll</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        h2 { color: #00f2fe; margin-bottom: 5px; }
+        p { color: #aaa; margin-bottom: 30px; padding: 0 20px; }
+        .vote-btn {
+            width: 80%;
+            max-width: 300px;
+            padding: 15px;
+            margin: 10px 0;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-cold { background-color: #2980b9; color: white; }
+        .btn-comfy { background-color: #27ae60; color: white; }
+        .btn-hot { background-color: #c0392b; color: white; }
+        .vote-btn:active { transform: scale(0.95); opacity: 0.8; }
+        #status { margin-top: 20px; font-weight: bold; height: 20px; }
+    </style>
+</head>
+<body>
+
+    <h2>🌡️ Comfort Poll</h2>
+    <p>How does the classroom temperature feel right now?</p>
+
+    <button class="vote-btn btn-cold" onclick="submitVote(0)">❄️ Too Cold</button>
+    <button class="vote-btn btn-comfy" onclick="submitVote(1)">💚 Comfortable</button>
+    <button class="vote-btn btn-hot" onclick="submitVote(2)">🔥 Too Hot</button>
+
+    <div id="status"></div>
+
+    <script>
+        // 🟢 Connects straight to your Google Apps Script!
+        const google_sheet_api = "https://script.google.com/macros/s/AKfycbxjCHt-ZCIEGRUNnG-q6er859rPA3u-UWJdoA4SuD4Vqe3pYrzc-2CNPXTYMcv4qFpN/exec";
+
+        async function submitVote(voteValue) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerText = "⏳ Sending vote...";
+            statusDiv.style.color = "#f1c40f";
+
+            try {
+                const payload = { action: 'vote', vote: voteValue };
+
+                const response = await fetch(google_sheet_api, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    statusDiv.innerText = "✅ Thank you! Vote recorded.";
+                    statusDiv.style.color = "#2ecc71";
+                    // Hide the buttons so they don't spam votes
+                    document.querySelectorAll('.vote-btn').forEach(btn => btn.style.display = 'none');
+                }
+            } catch (err) {
+                statusDiv.innerText = "❌ Network Error.";
+                statusDiv.style.color = "#e74c3c";
+            }
+        }
+    </script>
+</body>
+</html>
