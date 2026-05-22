@@ -318,20 +318,21 @@ function drawGauge(canvasId, value, label, subLabel) {
             { limit: 4000, color: "#8B1A4D", label: "Hazardous" } 
         ]
     },
-    'gauge-aqi': {
-    min: 0,
-    max: 5,
-    steps: 5,
-    unit: "ppb",
-    color: "#8b5cf6", // Default needle/theme color (Soft Purple)
-    zones: [
-        { limit: 1, color: "#5bc0de", label: "Excellent" }, // Blue
-        { limit: 2, color: "#5cb85c", label: "Good" },      // Green
-        { limit: 3, color: "#f0ad4e", label: "Moderate" },  // Yellow
-        { limit: 4, color: "#ff9f00", label: "Poor" },      // Orange
-        { limit: 5, color: "#d9534f", label: "Unhealthy" }  // Red
-    ]
-    },
+	    'gauge-aqi': {
+	    min: 0,
+	    max: 500,
+	    steps: 50, // Sets the tick marks at intervals of 50
+	    unit: "AQI", // AQI is a standard index, not measured in ppb
+	    color: "#8b5cf6", // Default needle/theme color
+	    zones: [
+	        { limit: 50,  color: "#5cb85c", label: "Good" },        // Green
+	        { limit: 100, color: "#f0ad4e", label: "Moderate" },    // Yellow
+	        { limit: 150, color: "#ff9f00", label: "Poor" },        // Orange
+	        { limit: 200, color: "#d9534f", label: "Bad" },         // Red
+	        { limit: 300, color: "#8b5cf6", label: "Very Bad" },    // Purple
+	        { limit: 500, color: "#7a2828", label: "Hazardous" }    // Maroon/Dark Red
+	    ]
+	},
     'gauge-tvoc': {
         min: 0,
         max: 5500,
