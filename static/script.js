@@ -321,7 +321,7 @@ function drawGauge(canvasId, value, label, subLabel) {
 	    'gauge-aqi': {
 	    min: 0,
 	    max: 500,
-	    steps: 50, // Sets the tick marks at intervals of 50
+	    steps: 10, // Sets the tick marks at intervals of 50
 	    unit: "AQI", // AQI is a standard index, not measured in ppb
 	    color: "#8b5cf6", // Default needle/theme color
 	    zones: [
