@@ -1707,6 +1707,7 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAdminStatus();
 });
 //----------------------
+
 async function handleAdvancedDownload(event) {
     const downloadBtn = (event && event.currentTarget) ? event.currentTarget : document.getElementById('downloadBtn');
     if (!downloadBtn) return;
@@ -1729,21 +1730,14 @@ async function handleAdvancedDownload(event) {
 
     const headerNames = ["Timestamp"]; 
     const selectedKeys = [];
-    
-    // Determine which specialty checkboxes were clicked
     let wantsGPS = false;
     let wantsVote = false;
-	// 🟢 THE FIX: Bulletproof text matching using .includes()
+
     checkedBoxes.forEach(cb => {
-        // Grab all text surrounding the checkbox, ignoring formatting
         const rawText = cb.parentElement.textContent || cb.parentElement.innerText;
-        
-        if (rawText.includes("GPS")) {
-            wantsGPS = true;
-        } else if (rawText.includes("Comfort")) {
-            wantsVote = true;
-        } else {
-            // Check against our known names
+        if (rawText.includes("GPS")) wantsGPS = true;
+        else if (rawText.includes("Comfort")) wantsVote = true;
+        else {
             Object.keys(nameMapping).forEach(key => {
                 if (rawText.includes(key) && !headerNames.includes(key)) {
                     headerNames.push(key);
@@ -1754,7 +1748,7 @@ async function handleAdvancedDownload(event) {
     });
 
     if (wantsGPS) headerNames.push("GPS_Lat", "GPS_Lng");
-    if (wantsVote) headerNames.push("Comfort_Vote");    
+    if (wantsVote) headerNames.push("Comfort_Vote");
 
     downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching Data...';
     downloadBtn.disabled = true;
@@ -1762,29 +1756,38 @@ async function handleAdvancedDownload(event) {
     try {
         const cache = new Date().getTime();
         
-        // 1. Prepare multiple fetch requests simultaneously
-        const fetchPromises = [
-            fetch(`${google_sheet_api}?type=history_date&date=${selectedDate}&t=${cache}`).then(r => r.json())
-        ];
+        // 🟢 THE FIX: Sequential Fetching
+        // Ask Google for files one at a time so we don't trigger the spam blocker
         
-        if (wantsGPS) fetchPromises.push(fetch(`${google_sheet_api}?type=history_gps&date=${selectedDate}&t=${cache}`).then(r => r.json()));
-        if (wantsVote) fetchPromises.push(fetch(`${google_sheet_api}?type=history_votes&date=${selectedDate}&t=${cache}`).then(r => r.json()));
+        // 1. Fetch Weather
+        const resWeather = await fetch(`${google_sheet_api}?type=history_date&date=${selectedDate}&t=${cache}`);
+        let weatherData = await resWeather.json();
 
-        // 2. Wait for all Google Sheet tabs to return data
-        const results = await Promise.all(fetchPromises);
-        
-        const weatherData = results[0] || [];
-        // Map the variable results array based on what was checked
-        const gpsData = wantsGPS ? results[1] : [];
-        const voteData = wantsVote ? (wantsGPS ? results[2] : results[1]) : [];
+        // 2. Fetch GPS (Only if they checked the box)
+        let gpsData = [];
+        if (wantsGPS) {
+            const resGPS = await fetch(`${google_sheet_api}?type=history_gps&date=${selectedDate}&t=${cache}`);
+            gpsData = await resGPS.json();
+        }
 
-        if (weatherData.length === 0 || weatherData.error) {
+        // 3. Fetch Votes (Only if they checked the box)
+        let voteData = [];
+        if (wantsVote) {
+            const resVote = await fetch(`${google_sheet_api}?type=history_votes&date=${selectedDate}&t=${cache}`);
+            voteData = await resVote.json();
+        }
+
+        // 🟢 SAFETY NETS: Ensure Google actually sent us Arrays back
+        if (!Array.isArray(weatherData)) weatherData = [];
+        if (!Array.isArray(gpsData)) gpsData = [];
+        if (!Array.isArray(voteData)) voteData = [];
+
+        if (weatherData.length === 0) {
             alert(`No history data found for ${selectedDate}.`);
             return;
         }
 
         // 3. TIME-SNAPPING ALGORITHM
-        // Snap GPS points to the nearest 15-sec weather row
         gpsData.forEach(g => {
             const gTime = new Date(g.timestamp).getTime();
             let closest = weatherData[0];
@@ -1796,7 +1799,6 @@ async function handleAdvancedDownload(event) {
             if (closest) { closest.snap_lat = g.lat; closest.snap_lng = g.lng; }
         });
 
-        // Snap Votes to the nearest 15-sec weather row
         voteData.forEach(v => {
             const vTime = new Date(v.timestamp).getTime();
             let closest = weatherData[0];
@@ -1805,16 +1807,12 @@ async function handleAdvancedDownload(event) {
                 let diff = Math.abs(new Date(w.timestamp).getTime() - vTime);
                 if (diff < minDiff) { minDiff = diff; closest = w; }
             });
-            
-            // Convert integer vote to readable text
             let textVote = v.vote === 0 ? "Too Cold" : (v.vote === 1 ? "Comfortable" : "Too Hot");
             if (closest) { closest.snap_vote = textVote; }
         });
 
-        // 4. Sort weather chronologically
         weatherData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-        // 5. Build the CSV Content
         let csvContent = "\ufeffsep=,\n" + headerNames.join(",") + "\n";
 
         weatherData.forEach(row => {
@@ -1826,14 +1824,12 @@ async function handleAdvancedDownload(event) {
                 rowValues.push(row[key] !== undefined && row[key] !== null ? row[key] : "");
             });
 
-            // Append snapped GPS and Votes (if they exist for this exact row)
             if (wantsGPS) { rowValues.push(row.snap_lat || "", row.snap_lng || ""); }
             if (wantsVote) { rowValues.push(row.snap_vote || ""); }
 
             csvContent += rowValues.join(",") + "\n";
         });
 
-        // 6. Trigger Download
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -1851,7 +1847,8 @@ async function handleAdvancedDownload(event) {
         }, 150);
 
     } catch (err) {
-        console.error("Export Error:", err);
+        // Log the exact error to the developer console so we can see it if it happens again
+        console.error("Detailed Export Error:", err);
         alert("Failed to export data. Please check your network connection.");
     } finally {
         downloadBtn.innerHTML = originalText;
