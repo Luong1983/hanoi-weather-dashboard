@@ -1578,11 +1578,14 @@ function openQRModal() {
     const qrImg = document.getElementById('modal-qr-img');
     const qrLinkText = document.getElementById('modal-qr-link');
     
-    // 🎯 Dynamically calculate your current server URL + the /vote endpoint
-    const voteEndpointUrl = window.location.origin + "/vote";
+    // 🟢 THE FIX: Dynamically grabs your exact GitHub Pages folder and adds vote.html
+    let basePath = window.location.href.split('?')[0].replace('index.html', '');
+    if (!basePath.endsWith('/')) basePath += '/';
+    const voteEndpointUrl = basePath + "vote.html";
     
     // Set the link text below the QR Code
     qrLinkText.innerText = voteEndpointUrl;
+    qrLinkText.href = voteEndpointUrl; // Make it clickable if they want to test it on PC
     
     // Generate the QR Code image using the free qrserver API
     qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(voteEndpointUrl)}`;
