@@ -1467,9 +1467,6 @@ function updateDynamicStats() {
     `;
 }
 
-//const statsCard = document.getElementById('statsOverlay');
-//const statsHeader = statsCard.querySelector('.stats-header');
-
 let isDragging = false;
 let currentX;
 let currentY;
@@ -1523,222 +1520,59 @@ function dragEnd() {
     document.removeEventListener('mousemove', drag);
     document.removeEventListener('mouseup', dragEnd);
 }
-
-async function handleAdvancedDownload(event) {
-    // 1. Identify the button accurately
-    const downloadBtn = (event && event.currentTarget) ? event.currentTarget : document.getElementById('downloadBtn');
-    const adminKey = localStorage.getItem('adminKey');
-    if (!downloadBtn) {
-        console.error("🚨 Error: Download button not found.");
-        return;
-    }
-
-    const range = document.getElementById('downloadRange').value;
-    const selectedDate = document.getElementById('trend-datepicker').value;
-    const originalText = downloadBtn.innerHTML;
-
-    // 2. Collect checked parameters and build filename
-    const checkedBoxes = document.querySelectorAll('#exportParams input:checked');
-    const nameMapping = {
-        "Temperature": "Temp", "Humidity": "Hum", "Pressure": "Pres",
-        "Wind Spd": "Wind", "Wind Dir": "WindD","PM2.5": "PM25", "Light": "Lux",
-        "CO": "CO", "UV": "UV", "Location (GPS)": "GPS"
-    };
-
-    const paramNicknames = Array.from(checkedBoxes).map(cb => {
-        const labelText = cb.parentElement.innerText.trim();
-        return nameMapping[labelText] || labelText.replace(/\s+/g, '');
-    }).join('_');
-
-    const selectedCols = Array.from(checkedBoxes).map(cb => cb.value);
-    const colsParam = selectedCols.length > 0 ? selectedCols.join(',') : 'temperature';
-    
-    const displayRange = range.charAt(0).toUpperCase() + range.slice(1);
-    const displayDate = (range === 'alltime') ? 'Full' : selectedDate;
-    const filename = `Weather_${paramNicknames}_${displayRange}_${displayDate}.csv`;
-
-    // 3. UI Processing State
-    downloadBtn.innerText = "⏳ Processing DB...";
-    downloadBtn.disabled = true;
-
-    try {
-        // 4. Fetch data with Admin Key
-        const response = await fetch(`/api/export?date=${selectedDate}&range=${range}&cols=${colsParam}`, {
-            method: 'GET',
-            headers: {
-                'X-Admin-Key': adminKey 
-            }
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            alert(`Export failed: ${error.detail}`);
-            return;
-        }
-
-        // 🎯 5. DATA URI TRIGGER (Bypasses "Insecure Blob" Warning)
-        const blob = await response.blob();
-
-        // 2. Wrap it with the \ufeff (BOM) so Excel opens it perfectly
-        // We combine the BOM and the original data into a NEW blob
-        const excelFriendlyBlob = new Blob(["\ufeff", blob], { type: 'text/csv;charset=utf-8' });
-
-        // 3. Create a temporary "Virtual Link"
-        const url = window.URL.createObjectURL(excelFriendlyBlob);
-        const a = document.createElement('a');
-        
-        // 4. Force the browser to recognize it as a DOWNLOAD
-        a.style.display = 'none';
-        a.href = url;
-        a.download = filename; // The dynamic name we built earlier
-        
-        // 🖥️ CRITICAL: PC browsers require the link to be in the document
-        document.body.appendChild(a);
-        
-        // 5. Trigger the save
-        a.click(); 
-        
-        // 6. Cleanup immediately to save memory
-        setTimeout(() => {
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-            console.log("✅ CSV Download triggered successfully.");
-        }, 150);
-
-    } catch (globalErr) {
-        console.error("Network or Server error:", globalErr);
-        alert(`Export failed: ${globalErr.message}`);
-    } finally {
-        // Reset button UI
-        downloadBtn.innerHTML = originalText;
-        downloadBtn.disabled = false;
-    }
-}
 //---------------------------------------------------------
 function sendPhoneGPS() {
-    const adminKey = localStorage.getItem('adminKey');
     if (!navigator.geolocation) {
-        console.error("❌ Geolocation is BLOCKED by browser security.");
         alert("GPS not supported or HTTPS not active!");
         return;
     }
 
-    navigator.geolocation.getCurrentPosition((position) => {
+    navigator.geolocation.getCurrentPosition(async (position) => {
         const payload = {
+            action: 'update_gps', // Tells Google Script which tab to update
             lat: position.coords.latitude,
             lng: position.coords.longitude
         };
 
-        fetch('/api/update-location', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'X-Admin-Key': adminKey
-            },
-            body: JSON.stringify(payload)
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log("Database updated:", data);
-            alert(`Location Synced: ${payload.lat}, ${payload.lng}`);
-            // 📍 MOVE THE MAP MARKER MANUALLY AFTER SYNC
-            if (window.myMapMarker) {
-                window.myMapMarker.setLatLng([payload.lat, payload.lng]);
-                window.mainMap.panTo([payload.lat, payload.lng]);
+        try {
+            // Send to Google Sheets as text/plain to bypass CORS security checks
+            await fetch(google_sheet_api, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify(payload)
+            });
+            
+            console.log("📍 GPS updated in Google Drive!");
+            alert(`Location Synced: ${payload.lat.toFixed(4)}, ${payload.lng.toFixed(4)}`);
+            
+            // Instantly move the marker on the user's screen
+            if (window.marker && window.mainMap) {
+                const newPos = [payload.lat, payload.lng];
+                window.marker.setLatLng(newPos);
+                window.mainMap.panTo(newPos);
             }
-        })
-        .catch(err => console.error("Update failed:", err));
+        } catch (err) {
+            console.error("GPS Sync failed:", err);
+            alert("Failed to sync GPS. Check network.");
+        }
     });
 }
 
 let lastMarkerLat = 0;
 let lastMarkerLon = 0;
 
-function updateDashboardUI() {
-    // 1. Fetch the filtered data (which is already locked in FastAPI)    
-    fetch('/api/get-location')    
-        .then(res => res.json())
-        .then(data => {
-            
-            // 2. Update the LCD text (v-lat, v-lng)
-            // Since you said these aren't blinking, this part is working!
-            document.getElementById('v-lat').innerText = data.lat.toFixed(4);
-            document.getElementById('v-lng').innerText = data.lng.toFixed(4);
-
-            // 3. 🎯 THE FIX: Only move the marker if the coordinates have 
-            // actually changed compared to the LAST time we moved the marker.
-            if (data.lat !== lastMarkerLat || data.lng !== lastMarkerLon) {
-                
-                if (window.marker) {
-                    const newLatLng = new L.LatLng(data.lat, data.lng);
-                    
-                    // Move the marker only once per change
-                    window.marker.setLatLng(newLatLng);
-                    
-                    // Optional: Only center the map if the jump is large
-                    window.mainMap.panTo(newLatLng);
-                    
-                    console.log("Marker moved to new locked position");
-                }
-
-                // Update our tracker
-                lastMarkerLat = data.lat;
-                lastMarkerLon = data.lng;
-            }
-        });
-}
-
 const OWNER_KEY = global_key; // Ensure this matches your state.py
-
-/* function updateDashboardAccess() {
-    // 1. Check if the user is logged in
-    const isAdmin = localStorage.getItem('adminKey') === OWNER_KEY;
-
-    // 2. Handle Login/Logout Button visibility
-    const loginBtn = document.getElementById('loginBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (loginBtn) loginBtn.style.display = isAdmin ? 'none' : 'block';
-    if (logoutBtn) logoutBtn.style.display = isAdmin ? 'block' : 'none';
-
-    // 3. Lock/Unlock the Research Tools (GPS and Download Button)
-    const syncBtn = document.getElementById('syncGpsBtn');
-    const downloadBtn = document.getElementById('downloadBtn');
-    
-    if (syncBtn) syncBtn.style.display = isAdmin ? 'inline-block' : 'none';
-    
-    if (downloadBtn) {
-        // Instead of hiding it, we just disable it so visitors see it exists but can't use it
-        downloadBtn.disabled = !isAdmin;
-        downloadBtn.style.opacity = isAdmin ? "1" : "0.5";
-        downloadBtn.style.cursor = isAdmin ? "pointer" : "not-allowed";
-    }
-
-    // 4. Lock/Unlock the "Include in CSV" Checkboxes
-    // We target all checkboxes that are inside the export section
-    const checkboxes = document.querySelectorAll('.params-grid input[type="checkbox"], #exportParams input[type="checkbox"]');
-    
-    checkboxes.forEach(cb => {
-        cb.disabled = !isAdmin; // Disable if not admin
-        // Fade the labels so it looks "Locked"
-        if (cb.parentElement) {
-            cb.parentElement.style.opacity = isAdmin ? "1" : "0.5";
-            cb.parentElement.style.cursor = isAdmin ? "pointer" : "not-allowed";
-        }
-    });
-
-    console.log("🔐 Dashboard Access Updated. Admin Mode:", isAdmin);
-} */
 
 async function refreshVotesTable() {
     try {
-        const res = await fetch('/api/votes?limit=8');
-        if (!res.ok) throw new Error("Server down");
+        // Fetch votes using the new GET route we built in Apps Script
+        const cacheBuster = new Date().getTime();
+        const res = await fetch(`${google_sheet_api}?type=get_votes&t=${cacheBuster}`);
         const data = await res.json();
         
         const tableBody = document.getElementById('votes-table-body');
         if (!tableBody) return;
-        
-        tableBody.innerHTML = ''; // Wipe out existing rows
+        tableBody.innerHTML = ''; 
         
         if (!data || data.length === 0) {
             tableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #555; padding: 20px;">No attendee feedback logged yet.</td></tr>`;
@@ -1749,16 +1583,12 @@ async function refreshVotesTable() {
             let badgeClass = '';
             let badgeText = '';
             
-            // Map the integer votes to status badges
             if (item.vote === 0) {
-                badgeClass = 'badge-cold';
-                badgeText = '❄️ Too Cold';
+                badgeClass = 'badge-cold'; badgeText = '❄️ Too Cold';
             } else if (item.vote === 1) {
-                badgeClass = 'badge-comfy';
-                badgeText = '💚 Comfortable';
+                badgeClass = 'badge-comfy'; badgeText = '💚 Comfortable';
             } else if (item.vote === 2) {
-                badgeClass = 'badge-hot';
-                badgeText = '🔥 Too Hot';
+                badgeClass = 'badge-hot'; badgeText = '🔥 Too Hot';
             }
             
             const rowHTML = `
@@ -1771,48 +1601,37 @@ async function refreshVotesTable() {
         });
         
     } catch (err) {
-        // 📡 Graceful Error Handling for net::ERR_NETWORK_IO_SUSPENDED
-        console.warn("📡 Poll Sync: Connection suspended. Retrying when network resumes...");
-        const tableBody = document.getElementById('votes-table-body');
-        if (tableBody && tableBody.innerHTML === '') {
-            tableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #777;">Reconnecting to Hanoi Station...</td></tr>`;
-        }
+        console.warn("📡 Poll Sync Failed. Retrying later...");
     }
 }
 
 // 🎯 Force castVote to be globally accessible by attaching it to the window object
+
 window.castVote = async function(voteValue) {
     const statusDiv = document.getElementById('poll-status');
-    if (statusDiv) statusDiv.innerText = "⏳ Recording vote...";
+    if (statusDiv) statusDiv.innerText = "⏳ Recording vote in Google Sheets...";
     
     try {
-        const response = await fetch('/api/submit-vote', {
+        const payload = {
+            action: 'vote', // Tells Google Script to log this in the "Votes" tab
+            vote: voteValue
+        };
+
+        const response = await fetch(google_sheet_api, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ vote: voteValue })
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify(payload)
         });
         
         if (response.ok) {
             if (statusDiv) statusDiv.innerText = "✅ Thank you! Vote recorded.";
-            
-            // 🔄 Instantly refresh the table so the attendee sees their vote appear!
-            if (typeof refreshVotesTable === 'function') {
-                refreshVotesTable();
-            }
-            
-            // Clear status message after 3 seconds
-            setTimeout(() => {
-                if (statusDiv) statusDiv.innerText = "";
-            }, 3000);
-        } else {
-            const errData = await response.json();
-            if (statusDiv) statusDiv.innerText = `❌ Error: ${errData.detail || "Submission failed"}`;
+            // Instantly refresh the table
+            if (typeof refreshVotesTable === 'function') refreshVotesTable();
+            setTimeout(() => { if (statusDiv) statusDiv.innerText = ""; }, 3000);
         }
     } catch (err) {
         console.error("Error submitting vote:", err);
-        if (statusDiv) statusDiv.innerText = "❌ Network error connecting to backend.";
+        if (statusDiv) statusDiv.innerText = "❌ Network error connecting to database.";
     }
 };
 
@@ -2033,24 +1852,6 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAdminStatus();
 });
 
-// 3. Example function showing how to UPDATE the compass with new data
-async function updateDashboardData() {
-    try {
-        const response = await fetch('/api/latest-data');
-        const data = await response.json();
-
-        // Update the compass needle
-        if (compass) {
-            compass.value = data.heading; // Use the heading value from your Python state
-        }
-        
-        // Update the digital readout below the gauge
-        document.getElementById('heading-val').innerText = data.heading;
-
-    } catch (err) {
-        console.error("Fetch error:", err);
-    }
-}
 
 
 
