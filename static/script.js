@@ -1708,107 +1708,130 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 //----------------------
 async function handleAdvancedDownload(event) {
-    // 1. Identify the button and prevent multiple clicks
     const downloadBtn = (event && event.currentTarget) ? event.currentTarget : document.getElementById('downloadBtn');
     if (!downloadBtn) return;
     const originalText = downloadBtn.innerHTML;
 
-    // 2. Identify the selected date
     const datePicker = document.getElementById('trend-datepicker');
     const selectedDate = (datePicker && datePicker.value) ? datePicker.value : new Date().toLocaleDateString('en-CA');
 
-    // 3. Find all checked boxes in the export panel
     const checkedBoxes = document.querySelectorAll('#exportParams input:checked, .params-grid input:checked');
     if (checkedBoxes.length === 0) {
         alert("Please select at least one parameter to export.");
         return;
     }
 
-    // 4. Map the HTML Checkbox Text to the Google Sheets JSON Keys
-    // This perfectly matches the labels in your UI to the data from the server
     const nameMapping = {
-        "Temp": "temperature", 
-        "Humid": "humidity", 
-        "Pressure": "pressure",
-        "Wind Spd": "ws", 
-        "Wind Dir": "wd", 
-        "PM2.5": "pm25",
-        "Light": "light", 
-        "CO2": "co", 
-        "UV": "uv"
-        // Note: GPS and Comfort Votes are in separate Google Tabs, 
-        // so they are excluded from this specific 15-sec interval weather export.
+        "Temp": "temperature", "Humid": "humidity", "Pressure": "pressure",
+        "Wind Spd": "ws", "Wind Dir": "wd", "PM2.5": "pm25",
+        "Light": "light", "CO2": "co", "UV": "uv"
     };
 
-    const headerNames = ["Timestamp"]; // Always include time first
+    const headerNames = ["Timestamp"]; 
     const selectedKeys = [];
+    
+    // Determine which specialty checkboxes were clicked
+    let wantsGPS = false;
+    let wantsVote = false;
 
     checkedBoxes.forEach(cb => {
         const labelText = cb.parentElement.innerText.trim();
-        const jsonKey = nameMapping[labelText];
-
-        if (jsonKey) {
-            headerNames.push(labelText); // E.g., "Temp"
-            selectedKeys.push(jsonKey);  // E.g., "temperature"
+        if (labelText === "Location (GPS)") wantsGPS = true;
+        else if (labelText === "Comfort Sensation") wantsVote = true;
+        else if (nameMapping[labelText]) {
+            headerNames.push(labelText);
+            selectedKeys.push(nameMapping[labelText]);
         }
     });
 
-    if (selectedKeys.length === 0) {
-        alert("Selected parameters are not available in the main weather database.");
-        return;
-    }
+    if (wantsGPS) headerNames.push("GPS_Lat", "GPS_Lng");
+    if (wantsVote) headerNames.push("Comfort_Vote");
 
-    // 5. Update UI to show it's loading
     downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching Data...';
     downloadBtn.disabled = true;
 
     try {
-        // 6. Fetch the day's data directly from Google Apps Script
-        const cacheBuster = new Date().getTime();
-        const res = await fetch(`${google_sheet_api}?type=history_date&date=${selectedDate}&t=${cacheBuster}`);
+        const cache = new Date().getTime();
         
-        if (!res.ok) throw new Error("Network error");
-        const data = await res.json();
+        // 1. Prepare multiple fetch requests simultaneously
+        const fetchPromises = [
+            fetch(`${google_sheet_api}?type=history_date&date=${selectedDate}&t=${cache}`).then(r => r.json())
+        ];
+        
+        if (wantsGPS) fetchPromises.push(fetch(`${google_sheet_api}?type=history_gps&date=${selectedDate}&t=${cache}`).then(r => r.json()));
+        if (wantsVote) fetchPromises.push(fetch(`${google_sheet_api}?type=history_votes&date=${selectedDate}&t=${cache}`).then(r => r.json()));
 
-        if (!data || data.length === 0 || data.error) {
+        // 2. Wait for all Google Sheet tabs to return data
+        const results = await Promise.all(fetchPromises);
+        
+        const weatherData = results[0] || [];
+        // Map the variable results array based on what was checked
+        const gpsData = wantsGPS ? results[1] : [];
+        const voteData = wantsVote ? (wantsGPS ? results[2] : results[1]) : [];
+
+        if (weatherData.length === 0 || weatherData.error) {
             alert(`No history data found for ${selectedDate}.`);
             return;
         }
 
-        // 7. Ensure data is perfectly sorted by timestep (Chronological Order)
-        data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        // 3. TIME-SNAPPING ALGORITHM
+        // Snap GPS points to the nearest 15-sec weather row
+        gpsData.forEach(g => {
+            const gTime = new Date(g.timestamp).getTime();
+            let closest = weatherData[0];
+            let minDiff = Infinity;
+            weatherData.forEach(w => {
+                let diff = Math.abs(new Date(w.timestamp).getTime() - gTime);
+                if (diff < minDiff) { minDiff = diff; closest = w; }
+            });
+            if (closest) { closest.snap_lat = g.lat; closest.snap_lng = g.lng; }
+        });
 
-        // 8. Build the CSV Content (Including the Excel sep=, overrider)
+        // Snap Votes to the nearest 15-sec weather row
+        voteData.forEach(v => {
+            const vTime = new Date(v.timestamp).getTime();
+            let closest = weatherData[0];
+            let minDiff = Infinity;
+            weatherData.forEach(w => {
+                let diff = Math.abs(new Date(w.timestamp).getTime() - vTime);
+                if (diff < minDiff) { minDiff = diff; closest = w; }
+            });
+            
+            // Convert integer vote to readable text
+            let textVote = v.vote === 0 ? "Too Cold" : (v.vote === 1 ? "Comfortable" : "Too Hot");
+            if (closest) { closest.snap_vote = textVote; }
+        });
+
+        // 4. Sort weather chronologically
+        weatherData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+        // 5. Build the CSV Content
         let csvContent = "\ufeffsep=,\n" + headerNames.join(",") + "\n";
 
-        data.forEach(row => {
-            // Format the timestamp nicely (e.g., "2026-05-21 14:30:15")
+        weatherData.forEach(row => {
             const tDate = new Date(row.timestamp);
-            const timeString = tDate.toLocaleTimeString('it-IT'); // HH:MM:SS format
-            const fullTime = `${selectedDate} ${timeString}`;
+            const timeString = tDate.toLocaleTimeString('it-IT'); 
+            const rowValues = [`${selectedDate} ${timeString}`];
 
-            const rowValues = [fullTime];
-
-            // Extract only the values for the columns the user checked
             selectedKeys.forEach(key => {
                 rowValues.push(row[key] !== undefined && row[key] !== null ? row[key] : "");
             });
 
-            // Join the row with commas and add a new line
+            // Append snapped GPS and Votes (if they exist for this exact row)
+            if (wantsGPS) { rowValues.push(row.snap_lat || "", row.snap_lng || ""); }
+            if (wantsVote) { rowValues.push(row.snap_vote || ""); }
+
             csvContent += rowValues.join(",") + "\n";
         });
 
-        // 9. Generate the dynamic filename
-        const filename = `Weather_Export_${selectedDate}_Custom.csv`;
-
-        // 10. Force the browser download
+        // 6. Trigger Download
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         
         a.style.display = 'none';
         a.href = url;
-        a.download = filename;
+        a.download = `Weather_Export_${selectedDate}_Custom.csv`;
         
         document.body.appendChild(a);
         a.click();
@@ -1816,14 +1839,12 @@ async function handleAdvancedDownload(event) {
         setTimeout(() => {
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
-            console.log("✅ Advanced CSV Download completed.");
         }, 150);
 
     } catch (err) {
         console.error("Export Error:", err);
         alert("Failed to export data. Please check your network connection.");
     } finally {
-        // Restore the button text
         downloadBtn.innerHTML = originalText;
         downloadBtn.disabled = false;
     }
