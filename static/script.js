@@ -1467,6 +1467,7 @@ function sendPhoneGPS() {
     navigator.geolocation.getCurrentPosition(async (position) => {
         const payload = {
             action: 'update_gps', // Tells Google Script which tab to update
+			key: localStorage.getItem('adminKey'),
             lat: position.coords.latitude,
             lng: position.coords.longitude
         };
@@ -1669,17 +1670,31 @@ function closeLoginModal() {
 }
 
 // 3. Function to process the password
-function submitLogin() {
+async function submitLogin() {
     const enteredPass = document.getElementById('adminPassInput').value;
     
-    if (enteredPass === ADMIN_KEY) {
-        localStorage.setItem('adminKey', enteredPass);
-        alert("🔓 Access Granted.");
-        closeLoginModal();
-        checkAdminStatus(); // This will enable your checkboxes/sticks
-    } else {
-        alert("❌ Incorrect Key.");
-        document.getElementById('adminPassInput').value = '';
+    // We send the password to the Google Sheet API to be checked securely
+    try {
+        const response = await fetch(google_sheet_api + "?type=check_auth", {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ key: enteredPass })
+        });
+        
+        const result = await response.text();
+        
+        if (result === "AUTHORIZED") {
+            localStorage.setItem('adminKey', enteredPass);
+            alert("🔓 Access Granted.");
+            closeLoginModal();
+            checkAdminStatus(); 
+        } else {
+            alert("❌ Incorrect Key.");
+            document.getElementById('adminPassInput').value = '';
+        }
+    } catch (err) {
+        console.error("Auth error:", err);
+        alert("Server error. Please try again.");
     }
 }
 
