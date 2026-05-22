@@ -14,7 +14,7 @@ var humChart = null;
 var presChart = null;
 let currentTimeframe = 24;
 let statsCard;
-let global_key = "minhquan";
+// <!--let global_key = "minhquan";-->
 
 
 console.log("🚀 script.js has started loading!");
