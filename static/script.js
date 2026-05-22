@@ -871,69 +871,6 @@ async function loadTrendByDate() {
     }
 }
 
-//--------------------------------
-/* async function loadTrendByDate() {
-    const datePicker = document.getElementById('trend-datepicker') || document.getElementById('historyDate');
-    const selectedDate = datePicker.value;
-    const sensor = window.currentSensor;
-    const title = window.currentTitle;
-
-    console.log(`📡 Fetching ${sensor} for ${selectedDate}...`);
-
-    try {
-        const todayStr = new Date().toLocaleDateString('en-CA'); 
-
-        // 🎯 FIX 1: The URL must include /sensor/ to match your Python @app.get
-        const [resHist, resToday] = await Promise.all([
-            fetch(`/api/history/sensor/${sensor}/${selectedDate}`),
-            fetch(`/api/history/sensor/${sensor}/${todayStr}`)
-        ]);
-
-        if (!resHist.ok) {
-            console.error(`🔴 Server Error (${resHist.status})`);
-            return; 
-        }
-
-        const dataHist = await resHist.json();
-        const dataToday = await resToday.json();
-
-        const safeHist = dataHist || [];
-        const safeToday = dataToday || [];
-
-        // 🎯 FIX 2: X-RAY DEBUG (Check your browser console for this number!)
-        console.log(`📦 DATA RECEIVED FROM DB: ${dataHist.length} rows found.`);
-        
-        if (window.activeChart) {
-            // 🎯 FIX 3: Simplify processing. 
-            // We use raw timestamps because your SQL already handles the Hanoi shift.
-            const historyPoints = prepareDataWithGaps(dataHist, selectedDate, sensor);
-            const todayPointsRaw = prepareDataWithGaps(dataToday, todayStr, sensor);
-            const todayPointsShifted = shiftToSelectedDate(todayPointsRaw, selectedDate);
-            //const todayPoints = prepareDataWithGaps(dataToday, todayStr, sensor);
-
-            // Set the X-Axis "Stadium" boundaries for a full 24h Hanoi day
-            window.activeChart.options.scales.x.min = new Date(selectedDate + "T00:00:00");
-            window.activeChart.options.scales.x.max = new Date(selectedDate + "T23:59:59");
-
-            // Update Datasets
-            //window.activeChart.data.datasets[0].data = todayPoints; // Live line
-            window.activeChart.data.datasets[0].data = todayPointsShifted;
-            window.activeChart.data.datasets[0].label = `Today (Live - ${todayStr})`;
-
-            window.activeChart.data.datasets[1].data = historyPoints; // Historical line
-            window.activeChart.data.datasets[1].label = `${sensor} (History - ${selectedDate})`;
-            //window.activeChart.data.datasets[1].label = `${title} (${selectedDate})`;
-
-            window.activeChart.update(); 
-            console.log("✅ Chart updated successfully!");
-        } else {
-            console.error("❌ activeChart not initialized!");
-        }
-    } catch (err) {
-        console.error("❌ Data error during fetch:", err);
-    }
-} */
-
 // Example button trigger
 async function openTrend(sensor, title) {
     console.log("🚀 openTrend started for:", sensor);    
@@ -1667,26 +1604,6 @@ function closeModalOnOutsideClick(event) {
     }
 }
 //-----------------------------------------------------
-/* const ADMIN_KEY = global_key; // Must match state.py
-function checkAdminStatus() {
-    const savedKey = localStorage.getItem('adminKey');
-    const isAdmin = savedKey === ADMIN_KEY;
-
-    // Elements to toggle
-    const loginBtn = document.getElementById('loginBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const syncGpsBtn = document.getElementById('syncGpsBtn');
-    const downloadBtn = document.getElementById('downloadBtn');
-
-    // Toggle Admin Login buttons
-    if (loginBtn) loginBtn.style.display = isAdmin ? 'none' : 'block';
-    if (logoutBtn) logoutBtn.style.display = isAdmin ? 'block' : 'none';
-
-    // Toggle restricted Research features
-    if (syncGpsBtn) syncGpsBtn.style.display = isAdmin ? 'inline-block' : 'none';
-    if (downloadBtn) downloadBtn.style.display = isAdmin ? 'inline-block' : 'none';
-} */
-
 const ADMIN_KEY = global_key; // Must match state.py
 
 function checkAdminStatus() {
@@ -1736,16 +1653,6 @@ function checkAdminStatus() {
     }
 }
 
-/* function handleLogin() {
-    const pass = prompt("🔐 Enter Owner Access Key:");
-    if (pass === ADMIN_KEY) {
-        localStorage.setItem('adminKey', pass);
-        alert("🔓 Access Granted. GPS and Download controls enabled.");
-        checkAdminStatus();
-    } else {
-        alert("❌ Incorrect Key.");
-    }
-} */
 function handleLogin() {
     const modal = document.getElementById('loginModal');
     const input = document.getElementById('adminPassInput');
@@ -1799,10 +1706,130 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check status immediately on load
     checkAdminStatus();
 });
+//----------------------
+async function handleAdvancedDownload(event) {
+    // 1. Identify the button and prevent multiple clicks
+    const downloadBtn = (event && event.currentTarget) ? event.currentTarget : document.getElementById('downloadBtn');
+    if (!downloadBtn) return;
+    const originalText = downloadBtn.innerHTML;
 
+    // 2. Identify the selected date
+    const datePicker = document.getElementById('trend-datepicker');
+    const selectedDate = (datePicker && datePicker.value) ? datePicker.value : new Date().toLocaleDateString('en-CA');
+
+    // 3. Find all checked boxes in the export panel
+    const checkedBoxes = document.querySelectorAll('#exportParams input:checked, .params-grid input:checked');
+    if (checkedBoxes.length === 0) {
+        alert("Please select at least one parameter to export.");
+        return;
+    }
+
+    // 4. Map the HTML Checkbox Text to the Google Sheets JSON Keys
+    // This perfectly matches the labels in your UI to the data from the server
+    const nameMapping = {
+        "Temp": "temperature", 
+        "Humid": "humidity", 
+        "Pressure": "pressure",
+        "Wind Spd": "ws", 
+        "Wind Dir": "wd", 
+        "PM2.5": "pm25",
+        "Light": "light", 
+        "CO2": "co", 
+        "UV": "uv"
+        // Note: GPS and Comfort Votes are in separate Google Tabs, 
+        // so they are excluded from this specific 15-sec interval weather export.
+    };
+
+    const headerNames = ["Timestamp"]; // Always include time first
+    const selectedKeys = [];
+
+    checkedBoxes.forEach(cb => {
+        const labelText = cb.parentElement.innerText.trim();
+        const jsonKey = nameMapping[labelText];
+
+        if (jsonKey) {
+            headerNames.push(labelText); // E.g., "Temp"
+            selectedKeys.push(jsonKey);  // E.g., "temperature"
+        }
+    });
+
+    if (selectedKeys.length === 0) {
+        alert("Selected parameters are not available in the main weather database.");
+        return;
+    }
+
+    // 5. Update UI to show it's loading
+    downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching Data...';
+    downloadBtn.disabled = true;
+
+    try {
+        // 6. Fetch the day's data directly from Google Apps Script
+        const cacheBuster = new Date().getTime();
+        const res = await fetch(`${google_sheet_api}?type=history_date&date=${selectedDate}&t=${cacheBuster}`);
+        
+        if (!res.ok) throw new Error("Network error");
+        const data = await res.json();
+
+        if (!data || data.length === 0 || data.error) {
+            alert(`No history data found for ${selectedDate}.`);
+            return;
+        }
+
+        // 7. Ensure data is perfectly sorted by timestep (Chronological Order)
+        data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+        // 8. Build the CSV Content (Including the Excel sep=, overrider)
+        let csvContent = "\ufeffsep=,\n" + headerNames.join(",") + "\n";
+
+        data.forEach(row => {
+            // Format the timestamp nicely (e.g., "2026-05-21 14:30:15")
+            const tDate = new Date(row.timestamp);
+            const timeString = tDate.toLocaleTimeString('it-IT'); // HH:MM:SS format
+            const fullTime = `${selectedDate} ${timeString}`;
+
+            const rowValues = [fullTime];
+
+            // Extract only the values for the columns the user checked
+            selectedKeys.forEach(key => {
+                rowValues.push(row[key] !== undefined && row[key] !== null ? row[key] : "");
+            });
+
+            // Join the row with commas and add a new line
+            csvContent += rowValues.join(",") + "\n";
+        });
+
+        // 9. Generate the dynamic filename
+        const filename = `Weather_Export_${selectedDate}_Custom.csv`;
+
+        // 10. Force the browser download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        
+        a.style.display = 'none';
+        a.href = url;
+        a.download = filename;
+        
+        document.body.appendChild(a);
+        a.click();
+        
+        setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            console.log("✅ Advanced CSV Download completed.");
+        }, 150);
+
+    } catch (err) {
+        console.error("Export Error:", err);
+        alert("Failed to export data. Please check your network connection.");
+    } finally {
+        // Restore the button text
+        downloadBtn.innerHTML = originalText;
+        downloadBtn.disabled = false;
+    }
+}
 // 1. Define the variable at the top so other functions can access it
 let compass; 
-
 document.addEventListener('DOMContentLoaded', () => {
     
     // 2. Initialize the Gauge ONLY if the library is loaded
