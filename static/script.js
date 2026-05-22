@@ -14,8 +14,6 @@ var humChart = null;
 var presChart = null;
 let currentTimeframe = 24;
 let statsCard;
-// <!--let global_key = "minhquan";-->
-
 
 console.log("🚀 script.js has started loading!");
 Chart.register(ChartZoom);
@@ -1608,11 +1606,8 @@ function closeModalOnOutsideClick(event) {
     }
 }
 //-----------------------------------------------------
-//const ADMIN_KEY = global_key; // Must match state.py
-
 function checkAdminStatus() {
     const isAdmin = !!localStorage.getItem('adminKey');
-
     const syncGpsBtn = document.getElementById('syncGpsBtn');
     const downloadBtn = document.getElementById('downloadBtn');
     const loginBtn = document.getElementById('loginBtn');
