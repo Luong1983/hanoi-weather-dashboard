@@ -1733,19 +1733,28 @@ async function handleAdvancedDownload(event) {
     // Determine which specialty checkboxes were clicked
     let wantsGPS = false;
     let wantsVote = false;
-
+	// 🟢 THE FIX: Bulletproof text matching using .includes()
     checkedBoxes.forEach(cb => {
-        const labelText = cb.parentElement.innerText.trim();
-        if (labelText === "Location (GPS)") wantsGPS = true;
-        else if (labelText === "Comfort Sensation") wantsVote = true;
-        else if (nameMapping[labelText]) {
-            headerNames.push(labelText);
-            selectedKeys.push(nameMapping[labelText]);
+        // Grab all text surrounding the checkbox, ignoring formatting
+        const rawText = cb.parentElement.textContent || cb.parentElement.innerText;
+        
+        if (rawText.includes("GPS")) {
+            wantsGPS = true;
+        } else if (rawText.includes("Comfort")) {
+            wantsVote = true;
+        } else {
+            // Check against our known names
+            Object.keys(nameMapping).forEach(key => {
+                if (rawText.includes(key) && !headerNames.includes(key)) {
+                    headerNames.push(key);
+                    selectedKeys.push(nameMapping[key]);
+                }
+            });
         }
     });
 
     if (wantsGPS) headerNames.push("GPS_Lat", "GPS_Lng");
-    if (wantsVote) headerNames.push("Comfort_Vote");
+    if (wantsVote) headerNames.push("Comfort_Vote");    
 
     downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching Data...';
     downloadBtn.disabled = true;
