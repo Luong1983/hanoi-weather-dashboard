@@ -1499,7 +1499,7 @@ function sendPhoneGPS() {
 let lastMarkerLat = 0;
 let lastMarkerLon = 0;
 
-const OWNER_KEY = global_key; // Ensure this matches your state.py
+//const OWNER_KEY = global_key; // Ensure this matches your state.py
 
 async function refreshVotesTable() {
     try {
@@ -1608,38 +1608,19 @@ function closeModalOnOutsideClick(event) {
     }
 }
 //-----------------------------------------------------
-const ADMIN_KEY = global_key; // Must match state.py
+//const ADMIN_KEY = global_key; // Must match state.py
 
 function checkAdminStatus() {
-    const savedKey = localStorage.getItem('adminKey');
-    const isAdmin = savedKey === ADMIN_KEY;
+    const isAdmin = !!localStorage.getItem('adminKey');
 
-    // 1. Elements to toggle
-    const loginBtn = document.getElementById('loginBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
     const syncGpsBtn = document.getElementById('syncGpsBtn');
     const downloadBtn = document.getElementById('downloadBtn');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
 
-    // 2. Toggle Admin Login buttons
+    // Toggle UI elements
     if (loginBtn) loginBtn.style.display = isAdmin ? 'none' : 'block';
     if (logoutBtn) logoutBtn.style.display = isAdmin ? 'block' : 'none';
-
-    // 3. Toggle restricted Research features (Sync GPS)
-    // if (syncGpsBtn) syncGpsBtn.style.display = isAdmin ? 'inline-block' : 'none';
-
-    // 4. 🔒 LOCK THE "STICKS" (Checkboxes)
-    // This finds all checkboxes in the export section
-    const checkboxes = document.querySelectorAll('#exportParams input[type="checkbox"]');
-    
-    checkboxes.forEach(cb => {
-        cb.disabled = !isAdmin; // Physically lock the checkbox
-        
-        // Add visual feedback to the label (fading it out)
-        if (cb.parentElement) {
-            cb.parentElement.style.opacity = isAdmin ? "1" : "0.4";
-            cb.parentElement.style.cursor = isAdmin ? "pointer" : "not-allowed";
-        }
-    });
 
     // 5. 🔒 LOCK THE DOWNLOAD BUTTON
     if (downloadBtn) {
