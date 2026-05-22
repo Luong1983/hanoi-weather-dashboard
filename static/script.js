@@ -656,49 +656,6 @@ function updateCompass(degrees, speed) {
         speedText.innerText = safeSpeed.toFixed(1);
     }
 }
-
-/* function updateCompass(degrees, speed) {
-    const needle = document.getElementById('compass-needle');
-    //const safeDeg = parseFloat(degrees || 0);
-    const degText = document.getElementById('v-wd');
-    const dirText = document.getElementById('dir-name');
-    const speedText = document.getElementById('v-ws');
-
-    // 1. Convert to numbers and fallback to 0 if data is missing or NaN
-    const safeDeg = isNaN(parseFloat(degrees)) ? 0 : parseFloat(degrees);
-    const safeSpeed = isNaN(parseFloat(speed)) ? 0 : parseFloat(speed);
-
-    // 2. Rotate Needle
-    if (needle) {
-        needle.style.transform = `translate(-50%, -50%) rotate(${safeDeg}deg)`;
-     }
-    
-
-    if (document.getElementById('v-wd')) {
-        document.getElementById('v-wd').innerText = Math.round(safeDeg);
-    }
-    
-    if (document.getElementById('v-ws')) {
-        document.getElementById('v-ws').innerText = parseFloat(speed || 0).toFixed(1);
-    }
-
-    // 3. Update Degree Text (Safe from NaN)
-    if (degText) {
-        degText.innerText = Math.round(safeDeg);
-    }
-
-    // 4. Update Cardinal Direction (Safe from undefined)
-    if (dirText) {
-        const sectors = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
-        const index = Math.round(safeDeg / 45) % 8;
-        dirText.innerText = sectors[index] || "N"; 
-    }
-
-    // 5. Update Wind Speed LCD
-    if (speedText) {
-        speedText.innerText = safeSpeed.toFixed(1);
-    }
-} */
 //---------------------------------
 // 6. Trend Modal Logic
 // Global variables to track the current view
@@ -727,29 +684,6 @@ function changeTimeframe(hours) {
 }
 
 //-------------------------
-/* function resetChartZoom() {
-    console.log("🛠️ Reset Attempted...");
-    
-    if (!activeChart) {
-        console.error("❌ No active chart found to reset.");
-        return;
-    }
-
-    // This will tell us if the plugin is actually attached to the chart
-    const hasZoom = activeChart.options.plugins.zoom;
-    const hasFunction = typeof activeChart.resetZoom === 'function';
-
-    console.log("Plugin config present?", !!hasZoom);
-    console.log("resetZoom function present?", hasFunction);
-
-    if (hasFunction) {
-        activeChart.resetZoom();
-        console.log("✅ Zoom reset successfully.");
-    } else {
-        alert("The Zoom Plugin is loaded, but Hammer.js is missing or the plugin was not registered correctly!");
-    }
-} */
-
 function closePopup() {
     const modal = document.getElementById('trendModal');
     
