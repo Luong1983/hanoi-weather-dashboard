@@ -1208,22 +1208,33 @@ function closeTrend() {
 
 //------------------------
 async function downloadCSV() {
-    // 1. Validate Data
-    if (!window.activeChart || !window.activeChart.data.datasets[1].data.length) {
-        alert("No data available to download!");
+    // 1. Validate that the chart exists and has data inside it
+    if (!window.activeChart || !window.activeChart.data || !window.activeChart.data.datasets || window.activeChart.data.datasets.length < 2) {
+        alert("No chart data available to download!");
         return;
     }
 
     const sensorName = window.currentSensor || "Sensor";
-    const dateStr = document.getElementById('trend-datepicker').value || new Date().toISOString().split('T')[0];
-    const historyData = window.activeChart.data.datasets[1].data;
-    const todayData = window.activeChart.data.datasets[0].data;
+    
+    // Fallback to today's date if the datepicker is empty
+    const datePicker = document.getElementById('trend-datepicker');
+    const dateStr = (datePicker && datePicker.value) ? datePicker.value : new Date().toLocaleDateString('en-CA');
+    
+    // Extract the raw arrays directly from Chart.js memory!
+    const todayData = window.activeChart.data.datasets[0].data || [];
+    const historyData = window.activeChart.data.datasets[1].data || [];
 
-    // 2. Build CSV Content
+    if (historyData.length === 0 && todayData.length === 0) {
+        alert("The chart is completely empty.");
+        return;
+    }
+
+    // 2. Build CSV Content by aligning the timestamps
     const masterMap = {};
     const processToMap = (dataArray, keyName) => {
         dataArray.forEach(point => {
-            if (point && point.x && point.y !== null) {
+            if (point && point.x && point.y !== null && point.y !== undefined) {
+                // 'it-IT' forces a clean 24-hour HH:MM:SS format
                 const tStr = new Date(point.x).toLocaleTimeString('it-IT'); 
                 if (!masterMap[tStr]) masterMap[tStr] = { hist: "", today: "" };
                 masterMap[tStr][keyName] = point.y;
@@ -1236,16 +1247,16 @@ async function downloadCSV() {
 
     const sortedTimes = Object.keys(masterMap).sort();
     
-    // Add \ufeff so Excel handles the encoding correctly on your PC
+    // Add \ufeff (Byte Order Mark) so Excel reads the UTF-8 encoding properly
     let csvContent = "\ufeffTimestamp,History_Value,Today_Live_Value\n";
     sortedTimes.forEach(t => {
         const row = masterMap[t];
         csvContent += `${dateStr} ${t},${row.hist},${row.today}\n`;
     });
 
-    // 3. 🚀 FORCE DOWNLOAD (No Picker)
+    // 3. 🚀 FORCE DOWNLOAD VIA BROWSER BLOB
     try {
-        console.log("Starting forced download...");
+        console.log(`Starting forced download for ${sensorName}...`);
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -1253,18 +1264,18 @@ async function downloadCSV() {
         link.href = url;
         link.download = `${sensorName}_${dateStr}_analysis.csv`;
         
-        // Append to body is required for some strict PC browser versions
+        // Temporarily attach to the body so strict browsers (like Firefox) allow the click
         document.body.appendChild(link);
         link.click();
         
-        // Clean up immediately
+        // Clean up the memory immediately
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
         
-        console.log("✅ CSV download triggered via Blob.");
+        console.log("✅ CSV download triggered via Blob successfully.");
     } catch (err) {
         console.error("❌ Critical Save Error:", err);
-        alert("Failed to save file. Check console (F12).");
+        alert("Failed to save file. Check your browser console.");
     }
 }
 //--------------------
