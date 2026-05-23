@@ -51,6 +51,7 @@ const sensorConfig = {
     ws:          { label: "Wind Speed",  color: "#00ff00", unit: "m/s" },
     co:          { label: "eCO2",        color: "#ffa500", unit: "ppm" },
     aqi:         { label: "AQI",         color: "#8b5cf6", unit: "" },  
+	aqi_val:     { label: "AQI Values",  color: "#8b5cf6", unit: "" },  
     tvoc:        { label: "TVOC",        color: "#10b981", unit: "ppb" }
 };
 
@@ -215,8 +216,8 @@ async function refreshDashboard() {
         document.getElementById('v-uv').innerText = (latest.uv || 0).toFixed(2);
         drawGauge('gauge-uv', latest.uv, "UV Light", "UV");        
 
-        document.getElementById('v-aqi').innerText = (latest.aqi || 0).toFixed(0);
-        drawGauge('gauge-aqi', latest.aqi, "AQI Index", "AQI");     
+        document.getElementById('v-aqi_val').innerText = (latest.aqi_val || 0).toFixed(0);
+        drawGauge('gauge-aqi_val', latest.aqi, "AQI Index", "AQI");     
 		updateTVOCBar(latest.aqi);
         
         document.getElementById('v-ws').innerText = (latest.ws || 0).toFixed(1);
@@ -319,7 +320,7 @@ function drawGauge(canvasId, value, label, subLabel) {
             { limit: 4000, color: "#8B1A4D", label: "Hazardous" } 
         ]
     },
-	    'gauge-aqi': {
+	    'gauge-aqi_val': {
 	    min: 0,
 	    max: 500,
 	    steps: 10, // Sets the tick marks at intervals of 50
