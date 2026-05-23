@@ -155,18 +155,18 @@ window.onload = function() {
 async function refreshDashboard() {
     try {
         // const cacheBuster = new Date().getTime();
-        // const res = await fetch(`${google_sheet_api}+ ?t=${cacheBuster}`);
-
-		// Add this inside refreshDashboard
-		const serverTime = new Date(latest.timestamp).getTime();
-		const localTime = new Date().getTime();
-		const latency = localTime - serverTime;
-		console.log("Lag (ms):", latency);
-		//----------------------------
+        // const res = await fetch(`${google_sheet_api}+ ?t=${cacheBuster}`);	
 		
 		const timestamp = new Date().getTime();
 		const res = await fetch(google_sheet_api + "?type=dashboard&t=" + timestamp);
         const data = await res.json();   
+
+		// Add this inside refreshDashboard
+		const serverTime = new Date(data.timestamp).getTime();
+		const localTime = new Date().getTime();
+		const latency = localTime - serverTime;
+		console.log("Lag (ms):", latency);
+		//----------------------------
 
         if (!data || data.error) return;
         
