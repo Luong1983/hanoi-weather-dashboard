@@ -62,11 +62,10 @@
 
         <div class="card"><canvas id="gauge-lux"></canvas><div class="lcd" id="v-lux">0.00</div><button class="trend-btn" onclick="openTrend('light', 'Light')">📈 TREND</button></div> 
         <div class="card"><canvas id="gauge-uv"></canvas><div class="lcd" id="v-uv">0.00</div><button class="trend-btn" onclick="openTrend('uv', 'UV')">📈 TREND</button></div>
-        <div class="card"><canvas id="gauge-aqi"></canvas><div class="lcd" id="v-aqi">0.00</div><button class="trend-btn" onclick="openTrend('aqi', 'AQI')">📈 TREND</button></div>
-		
+        <!-- <div class="card"><canvas id="gauge-aqi"></canvas><div class="lcd" id="v-aqi">0.00</div><button class="trend-btn" onclick="openTrend('aqi', 'AQI')">📈 TREND</button></div> -->
 		<div class="card">
-		    <h3>Air Quality</h3>
-		    <div id="gauge-aqi"></div>
+		    <canvas id="gauge-aqi"></canvas>
+		    <div class="lcd" id="v-aqi">0.00</div>
 		    
 		    <div class="tvoc-bar-container">
 		        <div class="tvoc-segment" id="tvoc-1">1</div>
@@ -75,7 +74,10 @@
 		        <div class="tvoc-segment" id="tvoc-4">4</div>
 		        <div class="tvoc-segment" id="tvoc-5">5</div>
 		    </div>
+		
+		    <button class="trend-btn" onclick="openTrend('aqi', 'AQI')">📈 TREND</button>
 		</div>
+		
         
         <div class="card"><canvas id="gauge-ws"></canvas><div class="lcd" id="v-ws">0.00</div><button class="trend-btn" onclick="openTrend('ws', 'Wind Speed')">📈 TREND</button></div>	    
     
