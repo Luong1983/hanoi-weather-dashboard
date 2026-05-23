@@ -218,7 +218,7 @@ async function refreshDashboard() {
         document.getElementById('v-uv').innerText = (latest.uv || 0).toFixed(2);
         drawGauge('gauge-uv', latest.uv, "UV Light", "UV");        
 
-        // document.getElementById('v-aqi_val').innerText = (latest.aqi_val || 0).toFixed(0);
+        document.getElementById('v-aqi_val').innerText = (latest.aqi_val || 0).toFixed(0);
         drawGauge('gauge-aqi_val', latest.aqi_val, "AQI Index", "AQI");    
 
 		// document.getElementById('v-aqi').innerText = (latest.aqi || 0).toFixed(0);
