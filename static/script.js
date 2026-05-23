@@ -442,7 +442,7 @@ function drawGauge(canvasId, value, label, subLabel) {
             lastLimit = zone.limit;
         });
     }
-    else if (canvasId === 'gauge-co' && config.zones) { // Catching your standard .zones structure
+    else if (canvasId === 'gauge-co' && config.cozones) { // Catching your standard .zones structure
         let lastLimit = config.min;
         config.zones.forEach(zone => {
             const blockStart = startAngle + ((lastLimit - config.min) / range) * totalSweep;
@@ -452,7 +452,7 @@ function drawGauge(canvasId, value, label, subLabel) {
             lastLimit = zone.limit;
         });
     }
-        else if (canvasId === 'gauge-aqi' && config.aqizones) {
+        else if (canvasId === 'gauge-aqi_val' && config.aqi_valzones) {
         let lastLimit = config.min;
         config.aqizones.forEach(zone => {
             const blockStart = startAngle + ((lastLimit - config.min) / range) * totalSweep;
@@ -1660,7 +1660,7 @@ async function handleAdvancedDownload(event) {
     const nameMapping = {
         "Temp": "temperature", "Humid": "humidity", "Pressure": "pressure",
         "Wind Spd": "ws", "Wind Dir": "wd", "PM2.5": "pm25",
-        "Light": "light", "CO2": "co", "UV": "uv"
+        "Light": "light", "CO2": "co", "UV": "uv", "AQI": "aqi_val"
     };
 
     const headerNames = ["Timestamp"]; 
