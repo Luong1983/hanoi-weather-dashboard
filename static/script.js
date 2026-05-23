@@ -452,16 +452,18 @@ function drawGauge(canvasId, value, label, subLabel) {
             lastLimit = zone.limit;
         });
     }
-        else if (canvasId === 'gauge-aqi_val' && config.aqi_valzones) {
-        let lastLimit = config.min;
-        config.aqi_valzones.forEach(zone => {
-            const blockStart = startAngle + ((lastLimit - config.min) / range) * totalSweep;
-            const blockEnd = startAngle + ((zone.limit - config.min) / range) * totalSweep;
-            ctx.beginPath(); ctx.arc(0, 0, radius - 12, blockStart, blockEnd);
-            ctx.strokeStyle = zone.color; ctx.stroke();
-            lastLimit = zone.limit;
-        });
-    }
+        else if (canvasId === 'gauge-aqi_val' && config.zones) {
+	    let lastLimit = config.min;
+	    config.zones.forEach(zone => { // ✅ Use .zones
+	        const blockStart = startAngle + ((lastLimit - config.min) / range) * totalSweep;
+	        const blockEnd = startAngle + ((zone.limit - config.min) / range) * totalSweep;
+	        ctx.beginPath();
+	        ctx.arc(0, 0, radius - 12, blockStart, blockEnd);
+	        ctx.strokeStyle = zone.color;
+	        ctx.stroke();
+	        lastLimit = zone.limit;
+	    });
+	}
     else if (canvasId === 'gauge-tvoc' && config.tvoczones) {
         let lastLimit = config.min;
         config.tvoczones.forEach(zone => {
