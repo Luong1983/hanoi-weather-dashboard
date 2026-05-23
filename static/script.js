@@ -145,8 +145,8 @@ window.onload = function() {
     initCharts();
     refreshDashboard();
     refreshVotesTable();
-    setInterval(refreshDashboard, 3000); 
-    setInterval(refreshVotesTable, 5000);
+    setInterval(refreshDashboard, 2000); 
+    setInterval(refreshVotesTable, 2000);
 
 };
 
@@ -154,8 +154,10 @@ window.onload = function() {
 
 async function refreshDashboard() {
     try {
-        const cacheBuster = new Date().getTime();
-        const res = await fetch(`${google_sheet_api}?t=${cacheBuster}`);
+        // const cacheBuster = new Date().getTime();
+        // const res = await fetch(`${google_sheet_api}+ ?t=${cacheBuster}`);
+		const timestamp = new Date().getTime();
+		const res = await fetch(google_sheet_api + "?type=dashboard&t=" + timestamp);
         const data = await res.json();   
 
         if (!data || data.error) return;
@@ -613,7 +615,7 @@ function drawGauge(canvasId, value, label, subLabel) {
     ctx.stroke();
 }
 //--------------------------
-setInterval(refreshDashboard, 3000);
+// setInterval(refreshDashboard, 3000);
 
 function updateGPS(lat, lng) {
     // Only update if map and marker exist and coords are valid
