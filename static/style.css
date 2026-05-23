@@ -1550,4 +1550,43 @@ button { background: #333; color: white; border: none; padding: 5px 10px; cursor
     color: #888;
     font-size: 0.9rem;
 }
+/* Container for the 1-5 bar */
+.tvoc-bar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    background-color: #1a1a1a; /* Dark background holding the bar */
+    border-radius: 6px;
+    padding: 4px;
+    gap: 4px;
+}
 
+/* Individual number segments */
+.tvoc-segment {
+    flex: 1;
+    text-align: center;
+    padding: 8px 0;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    border-radius: 4px;
+    opacity: 0.3; /* Dimmed out by default */
+    transition: all 0.3s ease;
+}
+
+/* The specific colors for 1 through 5 */
+#tvoc-1 { background-color: #5bc0de; } /* Blue/Excellent */
+#tvoc-2 { background-color: #5cb85c; } /* Green/Good */
+#tvoc-3 { background-color: #f0ad4e; } /* Yellow/Moderate */
+#tvoc-4 { background-color: #ff9f00; } /* Orange/Poor */
+#tvoc-5 { background-color: #d9534f; } /* Red/Unhealthy */
+
+/* 🟢 The 'Active' state that pops out */
+.tvoc-segment.active {
+    opacity: 1;
+    transform: scale(1.1); /* Makes the active block slightly bigger */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+    border: 2px solid white; /* Adds a crisp border like your sketch */
+    z-index: 2;
+}
