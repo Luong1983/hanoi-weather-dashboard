@@ -1557,8 +1557,8 @@ button { background: #333; color: white; border: none; padding: 5px 10px; cursor
     box-sizing: border-box; /* 🟢 Prevents padding from breaking the width */
     justify-content: space-between;
     align-items: center;
-    margin-top: 10px;
-    margin-bottom: 15px;
+    margin-top: 5px;
+    margin-bottom: 10px;
     background-color: #1a1a1a; 
     border-radius: 6px;
     padding: 4px;
@@ -1579,8 +1579,8 @@ button { background: #333; color: white; border: none; padding: 5px 10px; cursor
 }
 
 /* The specific colors for 1 through 5 */
-#tvoc-1 { background-color: #5bc0de; } /* Blue/Excellent */
-#tvoc-2 { background-color: #5cb85c; } /* Green/Good */
+#tvoc-1 { background-color: #5cb85c; } /* Green/Excellent */
+#tvoc-2 { background-color: #5bc0de; } /* Blue/ Good*/
 #tvoc-3 { background-color: #f0ad4e; } /* Yellow/Moderate */
 #tvoc-4 { background-color: #ff9f00; } /* Orange/Poor */
 #tvoc-5 { background-color: #d9534f; } /* Red/Unhealthy */
