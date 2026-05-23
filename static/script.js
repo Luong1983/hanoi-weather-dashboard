@@ -164,7 +164,7 @@ async function refreshDashboard() {
         
         // 🎯 FIX 1: Google Script returns a direct object, not an array block!
         const latest = data; 
-        
+        console.log("DEBUG: Data received from server:", latest);
         console.log("📍 GPS Data from DB:", latest.lat, latest.lng);
     
         const setUI = (id, value) => {
