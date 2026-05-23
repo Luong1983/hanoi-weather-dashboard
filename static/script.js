@@ -160,14 +160,6 @@ async function refreshDashboard() {
 		const timestamp = new Date().getTime();
 		const res = await fetch(google_sheet_api + "?type=dashboard&t=" + timestamp);
         const data = await res.json();   
-
-		// Add this inside refreshDashboard
-		const serverTime = new Date(data.timestamp).getTime();
-		const localTime = new Date().getTime();
-		const latency = localTime - serverTime;
-		console.log("Lag (ms):", latency);
-		//----------------------------
-
         if (!data || data.error) return;
         
         // 🎯 FIX 1: Google Script returns a direct object, not an array block!
