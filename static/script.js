@@ -997,6 +997,7 @@ function prepareDataWithGaps(rawData, selectedDate, sensor, thresholdMinutes = 1
             x: normalizedDate,
             y: parseFloat(item.value || item[sensor])
         });
+		console.log(`DEBUG: Plotting Point - Time: ${normalizedDate}, Value: ${parseFloat(item.value || item[sensor])}`);
 
         lastTime = currentTime;
     });
