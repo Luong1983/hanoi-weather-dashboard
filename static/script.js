@@ -454,7 +454,7 @@ function drawGauge(canvasId, value, label, subLabel) {
     }
         else if (canvasId === 'gauge-aqi_val' && config.aqi_valzones) {
         let lastLimit = config.min;
-        config.aqizones.forEach(zone => {
+        config.aqi_valzones.forEach(zone => {
             const blockStart = startAngle + ((lastLimit - config.min) / range) * totalSweep;
             const blockEnd = startAngle + ((zone.limit - config.min) / range) * totalSweep;
             ctx.beginPath(); ctx.arc(0, 0, radius - 12, blockStart, blockEnd);
