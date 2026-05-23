@@ -216,7 +216,8 @@ async function refreshDashboard() {
         drawGauge('gauge-uv', latest.uv, "UV Light", "UV");        
 
         document.getElementById('v-aqi').innerText = (latest.aqi || 0).toFixed(0);
-        drawGauge('gauge-aqi', latest.aqi, "AQI Index", "Level");     
+        drawGauge('gauge-aqi', latest.aqi, "AQI Index", "AQI");     
+		updateTVOCBar(latest.aqi);
         
         document.getElementById('v-ws').innerText = (latest.ws || 0).toFixed(1);
         drawGauge('gauge-ws', latest.ws, "Wind Speed", "m/s");    
@@ -1834,7 +1835,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }   
     checkAdminStatus();
 });
+//--------------------------
+// Function to highlight the correct 1-5 TVOC Index
+function updateTVOCBar(level) {
+    // Ensure the level is between 1 and 5
+    const safeLevel = Math.max(1, Math.min(5, Math.round(level)));
 
+    // Loop through all 5 segments
+    for (let i = 1; i <= 5; i++) {
+        const segment = document.getElementById(`tvoc-${i}`);
+        if (segment) {
+            if (i === safeLevel) {
+                // Turn ON the matching number
+                segment.classList.add('active');
+            } else {
+                // Turn OFF the other numbers
+                segment.classList.remove('active');
+            }
+        }
+    }
+}
 
 
 
