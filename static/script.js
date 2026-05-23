@@ -222,7 +222,8 @@ async function refreshDashboard() {
         drawGauge('gauge-aqi_val', latest.aqi_val, "AQI Index", "AQI");    
 
 		// document.getElementById('v-aqi').innerText = (latest.aqi || 0).toFixed(0);
-		updateTVOCBar(latest.aqi);
+		// updateTVOCBar(latest.aqi);
+		updateAQIIndexBar(latest.aqi_val);
         
         document.getElementById('v-ws').innerText = (latest.ws || 0).toFixed(1);
         drawGauge('gauge-ws', latest.ws, "Wind Speed", "m/s");    
@@ -1859,6 +1860,30 @@ function updateTVOCBar(level) {
             } else {
                 // Turn OFF the other numbers
                 segment.classList.remove('active');
+            }
+        }
+    }
+}
+//-------------------
+// Map the 0-500 value to the 1-5 index bar
+function updateAQIIndexBar(aqiValue) {
+    let index = 1;
+
+    // Logic based on your provided range table:
+    if (aqiValue <= 50)   index = 1;
+    else if (aqiValue <= 100) index = 2;
+    else if (aqiValue <= 150) index = 3;
+    else if (aqiValue <= 200) index = 4;
+    else index = 5; // Unhealthy (201+)
+
+    // Loop through all 5 segments and highlight the correct one
+    for (let i = 1; i <= 5; i++) {
+        const segment = document.getElementById(`tvoc-${i}`); // Uses your existing IDs
+        if (segment) {
+            if (i === index) {
+                segment.classList.add('active'); // Highlights the number
+            } else {
+                segment.classList.remove('active'); // Dims others
             }
         }
     }
