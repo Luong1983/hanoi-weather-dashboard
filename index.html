@@ -63,10 +63,7 @@
         <div class="card"><canvas id="gauge-lux"></canvas><div class="lcd" id="v-lux">0.00</div><button class="trend-btn" onclick="openTrend('light', 'Light')">📈 TREND</button></div> 
         <div class="card"><canvas id="gauge-uv"></canvas><div class="lcd" id="v-uv">0.00</div><button class="trend-btn" onclick="openTrend('uv', 'UV')">📈 TREND</button></div>
         <!-- <div class="card"><canvas id="gauge-aqi"></canvas><div class="lcd" id="v-aqi">0.00</div><button class="trend-btn" onclick="openTrend('aqi', 'AQI')">📈 TREND</button></div> -->
-		<div class="card">
-		    <canvas id="gauge-aqi"></canvas>
-			<div class="lcd" id="v-aqi">0.00</div>
-		        
+		<div class="card"><canvas id="gauge-aqi"></canvas>	        
 		    <div class="tvoc-bar-container">
 		        <div class="tvoc-segment" id="tvoc-1">1</div>
 		        <div class="tvoc-segment" id="tvoc-2">2</div>
@@ -76,35 +73,33 @@
 		    </div>
 		
 		    <button class="trend-btn" onclick="openTrend('aqi', 'AQI')">📈 TREND</button>
-		</div>
-		
-        
+		</div>	        
         <div class="card"><canvas id="gauge-ws"></canvas><div class="lcd" id="v-ws">0.00</div><button class="trend-btn" onclick="openTrend('ws', 'Wind Speed')">📈 TREND</button></div>	    
     
-    <div class="gauge-card" id="heading-card">
-        
-        <div class="card-header">
-            <h3>HEADING & WIND</h3>
-            
-            <a href="javascript:void(0)" class="trend-link" onclick="openTrend('heading')">
-                <i class="fas fa-chart-line"></i> TREND
-            </a>
-        </div>
-        
-        <div class="gauge-body">
-            <canvas id="compassGauge"></canvas>
-        </div>
-
-        <div class="digital-display-box">
-            <span id="v-wd">0</span>° <span id="dir-name">N</span>
-        </div>
-        
-        <!-- <div class="sub-text">
-            <span id="v-ws">0.0</span> m/s
-        </div> -->
-    </div>
-
-	<div class="card">
+	    <div class="gauge-card" id="heading-card">
+	        
+	        <div class="card-header">
+	            <h3>HEADING & WIND</h3>
+	            
+	            <a href="javascript:void(0)" class="trend-link" onclick="openTrend('heading')">
+	                <i class="fas fa-chart-line"></i> TREND
+	            </a>
+	        </div>
+	        
+	        <div class="gauge-body">
+	            <canvas id="compassGauge"></canvas>
+	        </div>
+	
+	        <div class="digital-display-box">
+	            <span id="v-wd">0</span>° <span id="dir-name">N</span>
+	        </div>
+	        
+	        <!-- <div class="sub-text">
+	            <span id="v-ws">0.0</span> m/s
+	        </div> -->
+	    </div>
+	
+		<div class="card">
                 <!-- <h3>GPS LOCATION</h3> -->
                 <div id="map-container" style="height: 200px; width: 100%; border-radius: 8px;"></div>
                 <div class="gps-coords">
@@ -113,114 +108,114 @@
                 </div>
     </div>     
 
-</div>
-
-<div id="trendModal" class="modal">
-    <div id="historyModal" class="modal"></div>
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 id="modalTitle">History</h2>
-            <div class="modal-controls">                
-                <button class="time-btn active" onclick="changeTimeframe(24)">TODAY</button>  
-                <button id="toggleFullscreen" title="Toggle Fullscreen" style="background:none; border:none; color:#ffcc00; cursor:pointer; font-size:1.2rem;">
-                    <i class="fas fa-expand-arrows-alt"></i> ⛶
-                </button>              
-                
-                <div class="history-controls" style="display: flex; align-items: center; gap: 10px;">              
-                    <input type="date" id="trend-datepicker" class="date-input" onChange="initHistoryChart(); loadTrendByDate();">
-                    
-                    <button id="statsBtn" class="btn-stats">
-                        <i class="fas fa-calculator"></i> STATISTIC
-                    </button>
-                    <button id="syncGpsBtn" class="btn btn-primary">
-                        <i class="fas fa-map-marker-alt"></i> Sync Phone GPS
-                    </button>
-                </div>
-            </div>            
-        </div>
-        
-        <div class="chart-box" style="height: 450px; width: 100%; position: relative;">
-            <canvas id="trendChart"></canvas>
-
-            <div id="statsOverlay" class="stats-card">
-                <div class="stats-header" id="statsHeader">
-                    <span><i class="fas fa-chart-bar"></i> Analysis</span>
-                    <div class="header-btns">
-                        <button id="minStatsBtn" title="Minimize">_</button>
-                        <button onclick="document.getElementById('statsOverlay').style.display='none'" title="Close">&times;</button>
-                    </div>
-                </div>
-                    <div class="stats-body" id="statsBody">                        
-                    </div>
-            </div>            
-           
-        </div>
-        <div id="exportParams" style="margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px; display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.85rem; color: #ddd;">
-            <span style="width: 100%; color: #ffcc00; font-weight: bold; margin-bottom: 5px;">Include in CSV:</span>
-            <label><input type="checkbox" value="temperature" checked> Temp</label>
-            <label><input type="checkbox" value="humidity"> Humid</label>
-            <label><input type="checkbox" value="pressure"> Pressure</label>
-            <label><input type="checkbox" value="ws"> Wind Spd</label>
-            <label><input type="checkbox" value="wd"> Wind Dir</label>
-            <label><input type="checkbox" value="pm25"> PM2.5</label>
-            <label><input type="checkbox" value="light"> Light</label>
-            <label><input type="checkbox" value="co"> CO2</label>
-            <label><input type="checkbox" value="uv"> UV</label>
-            <label><input type="checkbox" value="gps"> Location (GPS)</label>
-            <label><input type="checkbox" value="vote"> Comfort Sensation</label>
-        </div>
-        <div class="modal-actions">
-            <!-- 🎯 Range Selector + Download Button -->
-            <div class="export-container" style="display: flex; align-items: center; gap: 8px;">
-                <select id="downloadRange" class="date-input" style="width: auto; height: 38px; padding: 0 10px; font-size: 0.8rem;">
-                    <option value="current">Current View</option>
-                    <option value="day">Selected Day</option>
-                    <option value="week">Past 7 Days</option>
-                    <option value="month">Past 30 Days</option>
-                    <option value="year">Full Year</option>
-                    <option value="alltime">Full Dataset (All History)</option>
-                </select>
-                <button id="downloadBtn" class="time-btn" onclick="handleAdvancedDownload(event)">
-                    <i class="fas fa-download"></i> DOWNLOAD CSV
-                </button>
-            </div>            
-            <button onclick="resetChartZoom()" class="btn-reset">Reset Zoom</button>
-            <button class="time-btn close-btn" onclick="closeTrend()">CLOSE</button>  
-        </div>
-    </div>
-</div>
-
-<div id="qr-modal" class="qr-modal-overlay" onclick="closeModalOnOutsideClick(event)">
-    <div class="qr-modal-content">
-        <span class="close-modal-btn" onclick="closeQRModal()">&times;</span>
-        <h2>🌡️ Classroom Comfort Poll</h2>
-        <p class="qr-subtext">Scan this QR code with your phone to vote on how the room temperature feels.</p>
-        
-        <div class="qr-code-wrapper">
-            <img id="modal-qr-img" src="" alt="QR Code Loading...">
-        </div>
-        
-        <div class="qr-url-text">
-            Or visit: <span id="modal-qr-link"></span>
-        </div>
-    </div>    
-</div>
-
-<div id="loginModal" class="custom-modal">
-    <div class="modal-content">
-        <h3><i class="fas fa-user-shield"></i> Owner Access</h3>
-        <p>Please enter your secret key:</p>
-        
-        <form id="adminLoginForm">
-            <input type="password" id="adminPassInput" placeholder="••••••••••••" autofocus>
-            
-            <div class="modal-buttons">
-                <button type="submit" class="btn-ok">OK</button>
-                <button type="button" onclick="closeLoginModal()" class="btn-cancel">Cancel</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-</body>
+	</div>
+	
+	<div id="trendModal" class="modal">
+	    <div id="historyModal" class="modal"></div>
+	    <div class="modal-content">
+	        <div class="modal-header">
+	            <h2 id="modalTitle">History</h2>
+	            <div class="modal-controls">                
+	                <button class="time-btn active" onclick="changeTimeframe(24)">TODAY</button>  
+	                <button id="toggleFullscreen" title="Toggle Fullscreen" style="background:none; border:none; color:#ffcc00; cursor:pointer; font-size:1.2rem;">
+	                    <i class="fas fa-expand-arrows-alt"></i> ⛶
+	                </button>              
+	                
+	                <div class="history-controls" style="display: flex; align-items: center; gap: 10px;">              
+	                    <input type="date" id="trend-datepicker" class="date-input" onChange="initHistoryChart(); loadTrendByDate();">
+	                    
+	                    <button id="statsBtn" class="btn-stats">
+	                        <i class="fas fa-calculator"></i> STATISTIC
+	                    </button>
+	                    <button id="syncGpsBtn" class="btn btn-primary">
+	                        <i class="fas fa-map-marker-alt"></i> Sync Phone GPS
+	                    </button>
+	                </div>
+	            </div>            
+	        </div>
+	        
+	        <div class="chart-box" style="height: 450px; width: 100%; position: relative;">
+	            <canvas id="trendChart"></canvas>
+	
+	            <div id="statsOverlay" class="stats-card">
+	                <div class="stats-header" id="statsHeader">
+	                    <span><i class="fas fa-chart-bar"></i> Analysis</span>
+	                    <div class="header-btns">
+	                        <button id="minStatsBtn" title="Minimize">_</button>
+	                        <button onclick="document.getElementById('statsOverlay').style.display='none'" title="Close">&times;</button>
+	                    </div>
+	                </div>
+	                    <div class="stats-body" id="statsBody">                        
+	                    </div>
+	            </div>            
+	           
+	        </div>
+	        <div id="exportParams" style="margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px; display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.85rem; color: #ddd;">
+	            <span style="width: 100%; color: #ffcc00; font-weight: bold; margin-bottom: 5px;">Include in CSV:</span>
+	            <label><input type="checkbox" value="temperature" checked> Temp</label>
+	            <label><input type="checkbox" value="humidity"> Humid</label>
+	            <label><input type="checkbox" value="pressure"> Pressure</label>
+	            <label><input type="checkbox" value="ws"> Wind Spd</label>
+	            <label><input type="checkbox" value="wd"> Wind Dir</label>
+	            <label><input type="checkbox" value="pm25"> PM2.5</label>
+	            <label><input type="checkbox" value="light"> Light</label>
+	            <label><input type="checkbox" value="co"> CO2</label>
+	            <label><input type="checkbox" value="uv"> UV</label>
+	            <label><input type="checkbox" value="gps"> Location (GPS)</label>
+	            <label><input type="checkbox" value="vote"> Comfort Sensation</label>
+	        </div>
+	        <div class="modal-actions">
+	            <!-- 🎯 Range Selector + Download Button -->
+	            <div class="export-container" style="display: flex; align-items: center; gap: 8px;">
+	                <select id="downloadRange" class="date-input" style="width: auto; height: 38px; padding: 0 10px; font-size: 0.8rem;">
+	                    <option value="current">Current View</option>
+	                    <option value="day">Selected Day</option>
+	                    <option value="week">Past 7 Days</option>
+	                    <option value="month">Past 30 Days</option>
+	                    <option value="year">Full Year</option>
+	                    <option value="alltime">Full Dataset (All History)</option>
+	                </select>
+	                <button id="downloadBtn" class="time-btn" onclick="handleAdvancedDownload(event)">
+	                    <i class="fas fa-download"></i> DOWNLOAD CSV
+	                </button>
+	            </div>            
+	            <button onclick="resetChartZoom()" class="btn-reset">Reset Zoom</button>
+	            <button class="time-btn close-btn" onclick="closeTrend()">CLOSE</button>  
+	        </div>
+	    </div>
+	</div>
+	
+	<div id="qr-modal" class="qr-modal-overlay" onclick="closeModalOnOutsideClick(event)">
+	    <div class="qr-modal-content">
+	        <span class="close-modal-btn" onclick="closeQRModal()">&times;</span>
+	        <h2>🌡️ Classroom Comfort Poll</h2>
+	        <p class="qr-subtext">Scan this QR code with your phone to vote on how the room temperature feels.</p>
+	        
+	        <div class="qr-code-wrapper">
+	            <img id="modal-qr-img" src="" alt="QR Code Loading...">
+	        </div>
+	        
+	        <div class="qr-url-text">
+	            Or visit: <span id="modal-qr-link"></span>
+	        </div>
+	    </div>    
+	</div>
+	
+	<div id="loginModal" class="custom-modal">
+	    <div class="modal-content">
+	        <h3><i class="fas fa-user-shield"></i> Owner Access</h3>
+	        <p>Please enter your secret key:</p>
+	        
+	        <form id="adminLoginForm">
+	            <input type="password" id="adminPassInput" placeholder="••••••••••••" autofocus>
+	            
+	            <div class="modal-buttons">
+	                <button type="submit" class="btn-ok">OK</button>
+	                <button type="button" onclick="closeLoginModal()" class="btn-cancel">Cancel</button>
+	            </div>
+	        </form>
+	    </div>
+	</div>
+	
+	</body>
 </html>
