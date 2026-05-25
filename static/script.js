@@ -145,7 +145,7 @@ window.onload = function() {
     initCharts();
     refreshDashboard();
     refreshVotesTable();
-    setInterval(refreshDashboard, 2000); 
+    setInterval(refreshDashboard, 5000); 
     setInterval(refreshVotesTable, 2000);
 
 };
@@ -219,11 +219,11 @@ async function refreshDashboard() {
         drawGauge('gauge-uv', latest.uv, "UV Light", "UV");        
 
         document.getElementById('v-aqi_val').innerText = (latest.aqi_val || 0).toFixed(0);
-        drawGauge('gauge-aqi_val', latest.aqi_val, "AQI Index", "AQI");    
+        drawGauge('gauge-aqi_val', latest.aqi_val, "AQI Index", latest.aqi_val);    //"AQI"
 
 		// document.getElementById('v-aqi').innerText = (latest.aqi || 0).toFixed(0);
-		// updateTVOCBar(latest.aqi);
-		updateAQIIndexBar(latest.aqi_val);
+		updateTVOCBar(latest.aqi);
+		// updateAQIIndexBar(latest.aqi_val);
         
         document.getElementById('v-ws').innerText = (latest.ws || 0).toFixed(1);
         drawGauge('gauge-ws', latest.ws, "Wind Speed", "m/s");    
